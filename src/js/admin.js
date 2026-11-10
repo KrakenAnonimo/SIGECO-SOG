@@ -1,7 +1,10 @@
 
 import { supabase } from './supabase.js';
+import {
+    reproducirAnimacionAdmin,
+    detenerAnimacionAdmin
+} from '../animaciones.js';
 
-// Importa las funciones del mapa selector de ubicación.
 import {
     inicializarMapaUbicacion,
     buscarDireccion,
@@ -9,19 +12,45 @@ import {
     restablecerUbicacion
 } from './ubicacion-admin.js';
 
-// Contenedor principal del panel administrativo.
+// ======================================================
+// VARIABLES GENERALES
+// ======================================================
+
 const adminApp = document.querySelector('#admin-app');
-// Guarda el ID del establecimiento que se está editando.
+
 let establecimientoEnEdicion = null;
+let usuarioEnEdicion = null;
+let rolActual = null;
 
 // ======================================================
-// FUNCIONES GENERALES
+// CONTROL DE ROLES
 // ======================================================
 
-// Evita que los datos ingresados por usuarios se interpreten como HTML.
+function esAdministrador() {
+    return ['principal_admin', 'admin'].includes(rolActual);
+}
+
+function esVisualizador() {
+    return rolActual === 'viewer';
+}
+
+function aplicarModoSoloLectura(contenedor) {
+    if (!esVisualizador() || !contenedor) return;
+
+    contenedor.querySelectorAll(
+        'button, input, select, textarea'
+    ).forEach((control) => {
+        control.disabled = true;
+    });
+}
+
+// ======================================================
+// UTILIDADES
+// ======================================================
+
 function escaparHTML(valor) {
     return String(valor ?? '').replace(/[&<>"']/g, (caracter) => {
-        const caracteres = {
+        const mapa = {
             '&': '&amp;',
             '<': '&lt;',
             '>': '&gt;',
@@ -29,14 +58,268 @@ function escaparHTML(valor) {
             "'": '&#039;'
         };
 
-        return caracteres[caracter];
+        return mapa[caracter];
     });
 }
 
-// Muestra mensajes en la consola y en pantalla cuando corresponde.
 function mostrarError(mensaje, error) {
     console.error(mensaje, error);
     alert(mensaje);
+}
+
+function mostrarMensaje(elemento, mensaje, correcto = false) {
+    if (!elemento) return;
+
+    elemento.textContent = mensaje;
+    elemento.style.color = correcto ? '#187344' : '#b42318';
+}
+
+function cerrarModal(modal) {
+    if (modal) modal.hidden = true;
+}
+
+function esperar(tiempo) {
+    return new Promise((resolve) => setTimeout(resolve, tiempo));
+}
+
+async function esperarAnimacionMinima(inicio, duracionMinima = 1800) {
+    const tiempoTranscurrido = Date.now() - inicio;
+    const tiempoRestante = Math.max(0, duracionMinima - tiempoTranscurrido);
+
+    if (tiempoRestante > 0) {
+        await esperar(tiempoRestante);
+    }
+}
+
+function obtenerElemento(id) {
+    return document.getElementById(id);
+}
+
+// ======================================================
+// ALERTA FLOTANTE DE CONFIRMACIÓN
+// ======================================================
+
+function mostrarAlertaConfirmacion(mensaje) {
+    const avisoAnterior = obtenerElemento('aviso-confirmacion-admin');
+
+    if (avisoAnterior) avisoAnterior.remove();
+
+    const aviso = document.createElement('div');
+
+    aviso.id = 'aviso-confirmacion-admin';
+    aviso.setAttribute('role', 'status');
+    aviso.setAttribute('aria-live', 'polite');
+
+    aviso.innerHTML = `
+        <span class="aviso-confirmacion-icono">✓</span>
+        <span class="aviso-confirmacion-texto"></span>
+    `;
+
+    aviso.querySelector('.aviso-confirmacion-texto').textContent = mensaje;
+
+    Object.assign(aviso.style, {
+        position: 'fixed',
+        top: '24px',
+        right: '28px',
+        zIndex: '100000',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '13px',
+        minWidth: '280px',
+        maxWidth: 'min(420px, calc(100vw - 40px))',
+        padding: '15px 21px',
+        background: 'rgba(25, 65, 54, 0.94)',
+        color: '#f5f7f4',
+        border: '1px solid rgba(205, 177, 112, 0.48)',
+        borderLeft: '4px solid #cbb176',
+        borderRadius: '10px',
+        boxShadow: '0 10px 35px rgba(0, 0, 0, 0.24)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        fontFamily: 'inherit',
+        fontSize: '14px',
+        fontWeight: '500',
+        lineHeight: '1.45',
+        opacity: '0',
+        transform: 'translateY(-12px)',
+        transition: 'opacity 0.3s ease, transform 0.3s ease'
+    });
+
+    const icono = aviso.querySelector('.aviso-confirmacion-icono');
+
+    Object.assign(icono.style, {
+        display: 'flex',
+        flexShrink: '0',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '27px',
+        height: '27px',
+        borderRadius: '50%',
+        background: 'rgba(203, 177, 118, 0.18)',
+        color: '#e4cb91',
+        fontSize: '16px',
+        fontWeight: '700'
+    });
+
+    document.body.appendChild(aviso);
+
+    requestAnimationFrame(() => {
+        aviso.style.opacity = '1';
+        aviso.style.transform = 'translateY(0)';
+    });
+
+    setTimeout(() => {
+        aviso.style.opacity = '0';
+        aviso.style.transform = 'translateY(-12px)';
+
+        setTimeout(() => {
+            aviso.remove();
+        }, 350);
+    }, 3500);
+}
+
+// ======================================================
+// CONFIRMACIÓN ADMINISTRATIVA REUTILIZABLE
+// ======================================================
+
+function confirmarAccion({
+    titulo,
+    descripcion,
+    detalle,
+    mensajeExito,
+    accion,
+    tipoAnimacion = null
+}) {
+    return new Promise((resolve) => {
+        const modalAnterior = obtenerElemento('modal-accion-admin');
+
+        if (modalAnterior) modalAnterior.remove();
+
+        const modal = document.createElement('div');
+
+        modal.id = 'modal-accion-admin';
+        modal.className = 'admin-modal-overlay';
+
+        modal.innerHTML = `
+            <div class="admin-modal">
+
+                <div class="admin-modal-header">
+                    <div>
+                        <h2>${escaparHTML(titulo)}</h2>
+                        <p>${escaparHTML(descripcion)}</p>
+                    </div>
+
+                    <button type="button" class="admin-modal-close" data-cerrar>
+                        &times;
+                    </button>
+                </div>
+
+                <div class="admin-confirmation-content">
+                    <p>${escaparHTML(detalle)}</p>
+                </div>
+
+                <div class="admin-form-actions">
+                    <button type="button" class="admin-secondary-button" data-cancelar>
+                        Cancelar
+                    </button>
+
+                    <button type="button" class="admin-primary-button" data-confirmar>
+                        Confirmar
+                    </button>
+                </div>
+
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const botonCerrar = modal.querySelector('[data-cerrar]');
+        const botonCancelar = modal.querySelector('[data-cancelar]');
+        const botonConfirmar = modal.querySelector('[data-confirmar]');
+        const contenido = modal.querySelector('.admin-confirmation-content');
+
+        let finalizado = false;
+        let procesando = false;
+
+        function terminar(valor) {
+            if (finalizado || procesando) return;
+
+            finalizado = true;
+            modal.remove();
+            resolve(valor);
+        }
+
+        botonCerrar.addEventListener('click', () => terminar(false));
+        botonCancelar.addEventListener('click', () => terminar(false));
+
+        async function ejecutar() {
+            if (procesando || finalizado) return;
+
+            procesando = true;
+
+            botonConfirmar.disabled = true;
+            botonCancelar.disabled = true;
+            botonCerrar.disabled = true;
+
+            botonConfirmar.textContent = 'Procesando...';
+            modal.hidden = true;
+
+            try {
+                let promesaAnimacion = null;
+
+                if (tipoAnimacion) {
+                    promesaAnimacion = reproducirAnimacionAdmin(
+                        tipoAnimacion
+                    );
+                }
+
+                await accion();
+
+                if (promesaAnimacion) {
+                    await promesaAnimacion;
+                }
+
+                modal.remove();
+
+                mostrarAlertaConfirmacion(mensajeExito);
+
+                finalizado = true;
+                procesando = false;
+
+                resolve(true);
+
+            } catch (error) {
+                console.error(
+                    'Error en la operación administrativa:',
+                    error
+                );
+
+                detenerAnimacionAdmin();
+
+                modal.hidden = false;
+
+                contenido.innerHTML = `
+                    <p class="admin-error-message">
+                        No fue posible completar la operación.
+                        ${escaparHTML(
+                            error.message ||
+                            'Verifica los permisos e inténtalo nuevamente.'
+                        )}
+                    </p>
+                `;
+
+                botonConfirmar.disabled = false;
+                botonCancelar.disabled = false;
+                botonCerrar.disabled = false;
+
+                botonConfirmar.textContent = 'Intentar nuevamente';
+
+                procesando = false;
+            }
+        }
+
+        botonConfirmar.addEventListener('click', ejecutar);
+    });
 }
 
 // ======================================================
@@ -45,7 +328,7 @@ function mostrarError(mensaje, error) {
 
 async function verificarAcceso() {
     if (!adminApp) {
-        console.error('No se encontró el contenedor #admin-app.');
+        console.error('No se encontró #admin-app.');
         return;
     }
 
@@ -60,20 +343,26 @@ async function verificarAcceso() {
 
         const usuario = sesionData.session.user;
 
-        // Comprueba que el usuario tenga el rol de administrador.
         const { data: rol, error: rolError } = await supabase
             .from('user_roles')
             .select('role')
             .eq('user_id', usuario.id)
             .single();
 
-        if (rolError || !rol || rol.role !== 'admin') {
+        const rolesPermitidos = [
+            'principal_admin',
+            'admin',
+            'editor',
+            'viewer'
+        ];
+
+        if (rolError || !rol || !rolesPermitidos.includes(rol.role)) {
             await supabase.auth.signOut();
             window.location.replace('/');
             return;
         }
 
-        mostrarPanel(usuario);
+        mostrarPanel(usuario, rol.role);
 
     } catch (error) {
         console.error('Error al verificar el acceso:', error);
@@ -82,98 +371,81 @@ async function verificarAcceso() {
 }
 
 // ======================================================
-// ESTADÍSTICAS DEL PANEL
+// ESTADÍSTICAS
 // ======================================================
 
 async function cargarEstadisticas() {
-    const tarjetaEstablecimientos =
-        document.querySelector('#total-establecimientos');
+    const establecimientos = obtenerElemento('total-establecimientos');
+    const categorias = obtenerElemento('total-categorias');
+    const usuarios = obtenerElemento('total-usuarios');
 
-    const tarjetaCategorias =
-        document.querySelector('#total-categorias');
+    if (!establecimientos || !categorias) return;
 
-    const tarjetaUsuarios =
-        document.querySelector('#total-usuarios');
+    establecimientos.textContent = '...';
+    categorias.textContent = '...';
 
-    if (!tarjetaEstablecimientos || !tarjetaCategorias || !tarjetaUsuarios) {
-        return;
+    if (usuarios) {
+        usuarios.textContent = esAdministrador() ? '...' : '—';
     }
 
-    tarjetaEstablecimientos.textContent = '...';
-    tarjetaCategorias.textContent = '...';
-    tarjetaUsuarios.textContent = '...';
-
-    const [
-        resultadoEstablecimientos,
-        resultadoCategorias,
-        resultadoUsuarios
-    ] = await Promise.all([
-
-        // Cuenta los establecimientos activos.
+    const consultas = [
         supabase
             .from('establecimientos')
             .select('*', { count: 'exact', head: true })
             .eq('estado', 'activo'),
 
-        // Cuenta las categorías registradas.
         supabase
             .from('categorias')
-            .select('*', { count: 'exact', head: true }),
-
-        // Cuenta los usuarios administrativos visibles.
-        supabase
-            .from('user_roles')
             .select('*', { count: 'exact', head: true })
-    ]);
+    ];
 
-    if (resultadoEstablecimientos.error) {
-        console.error(
-            'Error al contar establecimientos:',
-            resultadoEstablecimientos.error
+    if (esAdministrador()) {
+        consultas.push(
+            supabase
+                .from('user_roles')
+                .select('*', { count: 'exact', head: true })
         );
     }
 
-    if (resultadoCategorias.error) {
-        console.error(
-            'Error al contar categorías:',
-            resultadoCategorias.error
-        );
-    }
+    const resultados = await Promise.all(consultas);
 
-    if (resultadoUsuarios.error) {
-        console.error(
-            'Error al contar usuarios:',
-            resultadoUsuarios.error
-        );
-    }
+    const resultadoEstablecimientos = resultados[0];
+    const resultadoCategorias = resultados[1];
 
-    tarjetaEstablecimientos.textContent =
-        resultadoEstablecimientos.error
-            ? 'Error'
-            : resultadoEstablecimientos.count ?? 0;
+    establecimientos.textContent = resultadoEstablecimientos.error
+        ? 'Error'
+        : resultadoEstablecimientos.count ?? 0;
 
-    tarjetaCategorias.textContent =
-        resultadoCategorias.error
-            ? 'Error'
-            : resultadoCategorias.count ?? 0;
+    categorias.textContent = resultadoCategorias.error
+        ? 'Error'
+        : resultadoCategorias.count ?? 0;
 
-    tarjetaUsuarios.textContent =
-        resultadoUsuarios.error
+    if (esAdministrador() && usuarios) {
+        const resultadoUsuarios = resultados[2];
+
+        usuarios.textContent = resultadoUsuarios.error
             ? 'Error'
             : resultadoUsuarios.count ?? 0;
+
+        if (resultadoUsuarios.error) console.error(resultadoUsuarios.error);
+    }
+
+    if (resultadoEstablecimientos.error) console.error(resultadoEstablecimientos.error);
+    if (resultadoCategorias.error) console.error(resultadoCategorias.error);
 }
 
 // ======================================================
-// CATEGORÍAS
+// CATEGORÍAS PARA EL SELECTOR DE ESTABLECIMIENTOS
 // ======================================================
 
 async function cargarCategorias() {
-    const selector = document.querySelector('#nueva-categoria');
+    const selector = obtenerElemento('nueva-categoria');
 
     if (!selector) return;
 
-    selector.innerHTML =
-        '<option value="">Cargando categorías...</option>';
+    const valorAnterior = selector.value;
+
+    selector.innerHTML = '<option value="">Cargando categorías...</option>';
 
     const { data, error } = await supabase
         .from('categorias')
@@ -182,64 +454,57 @@ async function cargarCategorias() {
 
     if (error) {
         console.error('Error al cargar categorías:', error);
-
-        selector.innerHTML =
-            '<option value="">Error al cargar categorías</option>';
-
+        selector.innerHTML = '<option value="">Error al cargar categorías</option>';
         return;
     }
 
-    selector.innerHTML =
-        '<option value="">Seleccionar categoría</option>';
+    selector.innerHTML = '<option value="">Seleccionar categoría</option>';
 
     (data || []).forEach((categoria) => {
         const opcion = document.createElement('option');
-
         opcion.value = categoria.id;
         opcion.textContent = categoria.nombre;
-
         selector.appendChild(opcion);
     });
+
+    if (valorAnterior) selector.value = valorAnterior;
 }
 
 // ======================================================
-// REGISTRO DE ESTABLECIMIENTOS
+// ESTABLECIMIENTOS: GUARDAR
 // ======================================================
-
 
 async function guardarEstablecimiento(evento) {
     evento.preventDefault();
 
+    if (esVisualizador()) return;
+
     const formulario = evento.currentTarget;
+    const boton = formulario.querySelector('button[type="submit"]');
+    const mensaje = obtenerElemento('mensaje-nuevo-establecimiento');
+    const campoLatitud = obtenerElemento('nueva-latitud');
+    const campoLongitud = obtenerElemento('nueva-longitud');
 
-    const botonGuardar = formulario.querySelector(
-        'button[type="submit"]'
-    );
+    if (!boton || !mensaje || !campoLatitud || !campoLongitud) return;
 
-    const mensaje = document.querySelector(
-        '#mensaje-nuevo-establecimiento'
-    );
+    const nombre = obtenerElemento('nuevo-nombre').value.trim();
+    const categoriaId = obtenerElemento('nueva-categoria').value;
+    const descripcion = obtenerElemento('nueva-descripcion').value.trim();
+    const direccion = obtenerElemento('nueva-direccion').value.trim();
+    const telefono = obtenerElemento('nuevo-telefono').value.trim();
+    const correo = obtenerElemento('nuevo-correo').value.trim();
 
-    const campoLatitud = document.querySelector('#nueva-latitud');
-    const campoLongitud = document.querySelector('#nueva-longitud');
+    const latitud = Number(campoLatitud.value);
+    const longitud = Number(campoLongitud.value);
 
-    if (!mensaje || !botonGuardar || !campoLatitud || !campoLongitud) {
+    if (!nombre || !categoriaId || !direccion) {
+        mostrarMensaje(mensaje, 'Completa los campos obligatorios.');
         return;
     }
-
-    const latitudTexto = campoLatitud.value;
-    const longitudTexto = campoLongitud.value;
-
-    if (!latitudTexto || !longitudTexto) {
-        mensaje.textContent = 'Debes seleccionar la ubicación en el mapa.';
-        mensaje.style.color = '#b42318';
-        return;
-    }
-
-    const latitud = Number(latitudTexto);
-    const longitud = Number(longitudTexto);
 
     if (
+        !campoLatitud.value ||
+        !campoLongitud.value ||
         !Number.isFinite(latitud) ||
         !Number.isFinite(longitud) ||
         latitud < -90 ||
@@ -247,200 +512,200 @@ async function guardarEstablecimiento(evento) {
         longitud < -180 ||
         longitud > 180
     ) {
-        mensaje.textContent = 'Las coordenadas seleccionadas no son válidas.';
-        mensaje.style.color = '#b42318';
+        mostrarMensaje(mensaje, 'Selecciona una ubicación válida en el mapa.');
         return;
     }
 
-    const establecimiento = {
-        nombre: document.querySelector('#nuevo-nombre').value.trim(),
-        categoria_id: document.querySelector('#nueva-categoria').value,
-        descripcion: document.querySelector('#nueva-descripcion').value.trim(),
-        direccion: document.querySelector('#nueva-direccion').value.trim(),
-        telefono: document.querySelector('#nuevo-telefono').value.trim(),
-        correo: document.querySelector('#nuevo-correo').value.trim(),
+    const registro = {
+        nombre,
+        categoria_id: categoriaId,
+        descripcion,
+        direccion,
+        telefono,
+        correo,
         latitud,
         longitud
     };
 
-    if (
-        !establecimiento.nombre ||
-        !establecimiento.categoria_id ||
-        !establecimiento.direccion
-    ) {
-        mensaje.textContent =
-            'Completa los campos obligatorios antes de continuar.';
-        mensaje.style.color = '#b42318';
-        return;
-    }
-
     const modoEdicion = establecimientoEnEdicion !== null;
+    const idEdicion = establecimientoEnEdicion;
+    const modal = obtenerElemento('modal-nuevo-establecimiento');
 
-    botonGuardar.disabled = true;
-    botonGuardar.textContent = modoEdicion ? 'Actualizando...' : 'Guardando...';
+    boton.disabled = true;
+    boton.textContent = modoEdicion ? 'Actualizando...' : 'Guardando...';
     mensaje.textContent = '';
 
     try {
-        let error;
+        if (modal) modal.hidden = true;
+
+        const inicioAnimacion = Date.now();
+        reproducirAnimacionAdmin('sol-carga', { loop: true });
+
+        let resultado;
 
         if (modoEdicion) {
-            const resultado = await supabase
+            resultado = await supabase
                 .from('establecimientos')
-                .update(establecimiento)
-                .eq('id', establecimientoEnEdicion);
-
-            error = resultado.error;
+                .update(registro)
+                .eq('id', idEdicion);
         } else {
-            const resultado = await supabase
+            resultado = await supabase
                 .from('establecimientos')
                 .insert([{
-                    ...establecimiento,
+                    ...registro,
                     estado: 'activo'
                 }]);
-
-            error = resultado.error;
         }
 
-        if (error) throw error;
+        if (resultado.error) throw resultado.error;
 
-        mensaje.textContent = modoEdicion
-            ? 'Establecimiento actualizado correctamente.'
-            : 'Establecimiento registrado correctamente.';
+        await Promise.all([
+            cargarEstablecimientos(obtenerElemento('admin-establishments-list')),
+            cargarEstadisticas()
+        ]);
 
-        mensaje.style.color = '#187344';
+        await esperarAnimacionMinima(inicioAnimacion);
+        detenerAnimacionAdmin();
 
-        establecimientoEnEdicion = null;
+        cerrarModal(modal);
         formulario.reset();
 
-        await cargarEstablecimientos(
-            document.querySelector('#admin-establishments-list')
+        establecimientoEnEdicion = null;
+
+        const coordenadas = obtenerElemento('coordenadas-seleccionadas');
+
+        if (coordenadas) {
+            coordenadas.textContent = 'Selecciona una ubicación en el mapa.';
+        }
+
+        mostrarAlertaConfirmacion(
+            modoEdicion
+                ? 'Establecimiento actualizado correctamente.'
+                : 'Establecimiento registrado correctamente.'
         );
-
-        await cargarEstadisticas();
-
-        setTimeout(() => {
-            const modal = document.querySelector(
-                '#modal-nuevo-establecimiento'
-            );
-
-            if (modal) modal.hidden = true;
-        }, 1200);
 
     } catch (error) {
         console.error('Error al guardar establecimiento:', error);
 
-        mensaje.textContent =
-            'No fue posible guardar los cambios. Verifica los datos y los permisos de Supabase.';
+        detenerAnimacionAdmin();
 
-        mensaje.style.color = '#b42318';
+        if (modal) modal.hidden = false;
+
+        mostrarMensaje(
+            mensaje,
+            'No fue posible guardar los cambios. Verifica la información y los permisos.'
+        );
 
     } finally {
-        botonGuardar.disabled = false;
-        botonGuardar.textContent = modoEdicion
+        boton.disabled = false;
+
+        boton.textContent = establecimientoEnEdicion !== null
             ? 'Actualizar establecimiento'
             : 'Guardar establecimiento';
     }
 }
 
-
 // ======================================================
-// ACTIVAR Y DESACTIVAR ESTABLECIMIENTOS
+// ESTABLECIMIENTOS: CAMBIAR ESTADO
 // ======================================================
 
 async function cambiarEstadoEstablecimiento(id) {
-    const { data: establecimiento, error: errorConsulta } =
-        await supabase
-            .from('establecimientos')
-            .select('estado')
-            .eq('id', id)
-            .single();
+    if (esVisualizador()) return;
 
-    if (errorConsulta || !establecimiento) {
-        mostrarError(
-            'No fue posible consultar el establecimiento.',
-            errorConsulta
-        );
-
-        return;
-    }
-
-    const nuevoEstado =
-        establecimiento.estado === 'activo'
-            ? 'inactivo'
-            : 'activo';
-
-    const accion =
-        nuevoEstado === 'activo'
-            ? 'activar'
-            : 'desactivar';
-
-    if (!confirm(`¿Deseas ${accion} este establecimiento?`)) {
-        return;
-    }
-
-    const { error } = await supabase
+    const { data: establecimiento, error } = await supabase
         .from('establecimientos')
-        .update({ estado: nuevoEstado })
-        .eq('id', id);
+        .select('id, nombre, estado')
+        .eq('id', id)
+        .single();
 
-    if (error) {
-        mostrarError(
-            'No fue posible cambiar el estado. Verifica los permisos de administrador.',
-            error
-        );
-
+    if (error || !establecimiento) {
+        mostrarError('No fue posible consultar el establecimiento.', error);
         return;
     }
 
-    await cargarEstablecimientos(
-        document.querySelector('#admin-establishments-list')
-    );
+    const activar = establecimiento.estado !== 'activo';
+    const nuevoEstado = activar ? 'activo' : 'inactivo';
 
-    await cargarEstadisticas();
+    await confirmarAccion({
+        titulo: activar ? 'Activar establecimiento' : 'Desactivar establecimiento',
+
+        descripcion: activar
+            ? 'El establecimiento volverá a estar disponible.'
+            : 'El establecimiento dejará de estar disponible.',
+
+        detalle: `¿Deseas ${activar ? 'activar' : 'desactivar'} "${establecimiento.nombre}"?`,
+
+        mensajeExito: activar
+            ? 'Establecimiento activado correctamente.'
+            : 'Establecimiento desactivado correctamente.',
+
+        tipoAnimacion: activar ? 'acero-a-sol' : 'sol-a-acero',
+
+        accion: async () => {
+            const { error: errorCambio } = await supabase
+                .from('establecimientos')
+                .update({ estado: nuevoEstado })
+                .eq('id', id);
+
+            if (errorCambio) throw errorCambio;
+
+            await Promise.all([
+                cargarEstablecimientos(obtenerElemento('admin-establishments-list')),
+                cargarEstadisticas()
+            ]);
+        }
+    });
 }
 
 // ======================================================
-// ELIMINACIÓN DE ESTABLECIMIENTOS
+// ESTABLECIMIENTOS: ELIMINAR
 // ======================================================
 
 async function eliminarEstablecimiento(id) {
-    const confirmar = confirm(
-        '¿Estás seguro de eliminar este establecimiento? Esta acción no se puede deshacer.'
-    );
+    if (esVisualizador()) return;
 
-    if (!confirmar) return;
-
-    const { error } = await supabase
+    const { data: establecimiento, error } = await supabase
         .from('establecimientos')
-        .delete()
-        .eq('id', id);
+        .select('nombre')
+        .eq('id', id)
+        .single();
 
-    if (error) {
-        mostrarError(
-            'No fue posible eliminar el establecimiento. Es posible que falte habilitar el permiso de eliminación en Supabase.',
-            error
-        );
-
+    if (error || !establecimiento) {
+        mostrarError('No fue posible consultar el establecimiento.', error);
         return;
     }
 
-    alert('Establecimiento eliminado correctamente.');
+    await confirmarAccion({
+        titulo: 'Eliminar establecimiento',
+        descripcion: 'Esta acción no se puede deshacer.',
+        detalle: `¿Estás seguro de que deseas eliminar "${establecimiento.nombre}"?`,
+        mensajeExito: 'Establecimiento eliminado correctamente.',
+        tipoAnimacion: 'acero-brillo',
 
-    await cargarEstablecimientos(
-        document.querySelector('#admin-establishments-list')
-    );
+        accion: async () => {
+            const { error: errorEliminar } = await supabase
+                .from('establecimientos')
+                .delete()
+                .eq('id', id);
 
-    await cargarEstadisticas();
+            if (errorEliminar) throw errorEliminar;
+
+            await Promise.all([
+                cargarEstablecimientos(obtenerElemento('admin-establishments-list')),
+                cargarEstadisticas()
+            ]);
+        }
+    });
 }
 
 // ======================================================
-// EDICIÓN DE ESTABLECIMIENTOS
+// ESTABLECIMIENTOS: EDITAR
 // ======================================================
 
-
 async function editarEstablecimiento(id) {
+    if (esVisualizador()) return;
+
     try {
-        // Consulta todos los datos del establecimiento seleccionado.
         const { data, error } = await supabase
             .from('establecimientos')
             .select('*')
@@ -448,81 +713,60 @@ async function editarEstablecimiento(id) {
             .single();
 
         if (error) throw error;
+        if (!data) throw new Error('No se encontró el establecimiento.');
 
-        if (!data) {
-            throw new Error('No se encontró el establecimiento.');
-        }
-
-        // Guarda el identificador para activar el modo edición.
         establecimientoEnEdicion = data.id;
 
-        const modal = document.querySelector(
-            '#modal-nuevo-establecimiento'
-        );
-
-        const formulario = document.querySelector(
-            '#form-nuevo-establecimiento'
-        );
+        const modal = obtenerElemento('modal-nuevo-establecimiento');
+        const formulario = obtenerElemento('form-nuevo-establecimiento');
 
         if (!modal || !formulario) {
-            throw new Error('No se encontró el formulario de edición.');
+            throw new Error('No se encontró el formulario de establecimientos.');
         }
 
-        // Carga las categorías antes de seleccionar la correspondiente.
         await cargarCategorias();
 
-        // Recupera los datos existentes.
-        document.querySelector('#nuevo-nombre').value = data.nombre || '';
-        document.querySelector('#nueva-categoria').value =
-            data.categoria_id || '';
-        document.querySelector('#nueva-descripcion').value =
-            data.descripcion || '';
-        document.querySelector('#nueva-direccion').value =
-            data.direccion || '';
-        document.querySelector('#nuevo-telefono').value =
-            data.telefono || '';
-        document.querySelector('#nuevo-correo').value =
-            data.correo || '';
+        obtenerElemento('nuevo-nombre').value = data.nombre || '';
+        obtenerElemento('nueva-categoria').value = data.categoria_id || '';
+        obtenerElemento('nueva-descripcion').value = data.descripcion || '';
+        obtenerElemento('nueva-direccion').value = data.direccion || '';
+        obtenerElemento('nuevo-telefono').value = data.telefono || '';
+        obtenerElemento('nuevo-correo').value = data.correo || '';
 
-        // Cambia los textos del formulario.
-        modal.querySelector('.admin-modal-header h2').textContent =
-            'Editar establecimiento';
+        const titulo = modal.querySelector('.admin-modal-header h2');
+        if (titulo) titulo.textContent = 'Editar establecimiento';
 
-        modal.querySelector('.admin-modal-header p').textContent =
-            'Modifica la información del establecimiento seleccionado.';
+        const descripcion = modal.querySelector('.admin-modal-header p');
+        if (descripcion) {
+            descripcion.textContent = 'Modifica la información del establecimiento seleccionado.';
+        }
 
         formulario.querySelector('button[type="submit"]').textContent =
             'Actualizar establecimiento';
 
-        document.querySelector(
-            '#mensaje-nuevo-establecimiento'
-        ).textContent = '';
+        obtenerElemento('mensaje-nuevo-establecimiento').textContent = '';
 
-        // Abre el formulario y recupera su ubicación.
         modal.hidden = false;
 
         requestAnimationFrame(() => {
             inicializarMapaUbicacion();
-
             establecerUbicacion(data.latitud, data.longitud);
         });
 
     } catch (error) {
-        console.error('Error al cargar establecimiento para edición:', error);
-        alert('No fue posible cargar los datos del establecimiento.');
+        console.error('Error al editar establecimiento:', error);
+        alert('No fue posible cargar la información del establecimiento.');
     }
 }
 
-
 // ======================================================
-// CONSULTA Y TABLA DE ESTABLECIMIENTOS
+// ESTABLECIMIENTOS: TABLA
 // ======================================================
 
 async function cargarEstablecimientos(contenedor) {
     if (!contenedor) return;
 
-    contenedor.innerHTML =
-        '<p>Cargando establecimientos...</p>';
+    contenedor.innerHTML = '<p>Cargando establecimientos...</p>';
 
     const { data, error } = await supabase
         .from('establecimientos')
@@ -539,25 +783,16 @@ async function cargarEstablecimientos(contenedor) {
         .order('nombre', { ascending: true });
 
     if (error) {
-        console.error(
-            'Error al consultar establecimientos:',
-            error
-        );
-
-        contenedor.innerHTML =
-            '<p>No fue posible cargar los establecimientos. Verifica los permisos de consulta.</p>';
-
+        console.error('Error al cargar establecimientos:', error);
+        contenedor.innerHTML = '<p>No fue posible cargar los establecimientos.</p>';
         return;
     }
 
     if (!data || data.length === 0) {
-        contenedor.innerHTML =
-            '<p>No hay establecimientos registrados.</p>';
-
+        contenedor.innerHTML = '<p>No hay establecimientos registrados.</p>';
         return;
     }
 
-    // Construye la tabla con los registros consultados.
     contenedor.innerHTML = `
         <div class="admin-table-container">
             <table class="admin-table">
@@ -571,100 +806,45 @@ async function cargarEstablecimientos(contenedor) {
                         <th>Acciones</th>
                     </tr>
                 </thead>
-
                 <tbody>
-                    ${data.map((establecimiento) => `
+                    ${data.map((item) => `
                         <tr>
+                            <td>${escaparHTML(item.nombre)}</td>
+                            <td>${escaparHTML(item.categorias?.nombre || 'Sin categoría')}</td>
+                            <td>${escaparHTML(item.direccion || 'No registrada')}</td>
+                            <td>${escaparHTML(item.telefono || 'No registrado')}</td>
                             <td>
-                                ${escaparHTML(establecimiento.nombre)}
+                                <span class="admin-status ${item.estado === 'activo' ? 'active' : 'inactive'}">
+                                    ${escaparHTML(item.estado)}
+                                </span>
                             </td>
-
-                            <td>
-                                ${escaparHTML(
-                                    establecimiento.categorias?.nombre ||
-                                    'Sin categoría'
-                                )}
-                            </td>
-
-                            <td>
-                                ${escaparHTML(
-                                    establecimiento.direccion ||
-                                    'No registrada'
-                                )}
-                            </td>
-
-                            <td>
-                                ${escaparHTML(
-                                    establecimiento.telefono ||
-                                    'No registrado'
-                                )}
-                            </td>
-
-                            <td>
-                                ${escaparHTML(establecimiento.estado)}
-                            </td>
-
                             <td class="admin-actions-cell">
-
                                 <button
                                     type="button"
                                     class="admin-action-button edit"
                                     data-action="editar"
-                                    data-id="${escaparHTML(establecimiento.id)}"
-                                    title="Editar establecimiento"
-                                    aria-label="Editar establecimiento"
-                                >
-                                    <svg viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="1.8"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M12 20h9"/>
-                                        <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/>
-                                    </svg>
-                                </button>
+                                    data-id="${escaparHTML(item.id)}"
+                                    title="Editar"
+                                    ${esVisualizador() ? 'disabled' : ''}
+                                >✎</button>
 
                                 <button
                                     type="button"
                                     class="admin-action-button toggle"
-                                    data-action="cambiar-estado"
-                                    data-id="${escaparHTML(establecimiento.id)}"
-                                    title="Activar o desactivar"
-                                    aria-label="Activar o desactivar establecimiento"
-                                >
-                                    <svg viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="1.8"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M12 2v10"/>
-                                        <path d="M5.6 5.6a9 9 0 1 0 12.8 0"/>
-                                    </svg>
-                                </button>
+                                    data-action="estado"
+                                    data-id="${escaparHTML(item.id)}"
+                                    title="Cambiar estado"
+                                    ${esVisualizador() ? 'disabled' : ''}
+                                >⇄</button>
 
                                 <button
                                     type="button"
                                     class="admin-action-button delete"
                                     data-action="eliminar"
-                                    data-id="${escaparHTML(establecimiento.id)}"
-                                    title="Eliminar establecimiento"
-                                    aria-label="Eliminar establecimiento"
-                                >
-                                    <svg viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="1.8"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M3 6h18"/>
-                                        <path d="M8 6V4h8v2"/>
-                                        <path d="m19 6-1 14H6L5 6"/>
-                                        <path d="M10 11v5M14 11v5"/>
-                                    </svg>
-                                </button>
-
+                                    data-id="${escaparHTML(item.id)}"
+                                    title="Eliminar"
+                                    ${esVisualizador() ? 'disabled' : ''}
+                                >✕</button>
                             </td>
                         </tr>
                     `).join('')}
@@ -673,46 +853,710 @@ async function cargarEstablecimientos(contenedor) {
         </div>
     `;
 
-    // Detecta los clics en los botones de acciones de la tabla.
     contenedor.onclick = async (evento) => {
         const boton = evento.target.closest('[data-action]');
 
-        if (!boton || !contenedor.contains(boton)) return;
+        if (!boton || !contenedor.contains(boton) || boton.disabled) return;
 
         const id = boton.dataset.id;
-        const accion = boton.dataset.action;
-
         if (!id) return;
-
-        // Evita varios clics mientras se ejecuta una acción.
-        if (boton.disabled) return;
 
         boton.disabled = true;
 
         try {
-            if (accion === 'cambiar-estado') {
-                await cambiarEstadoEstablecimiento(id);
+            switch (boton.dataset.action) {
+                case 'editar':
+                    await editarEstablecimiento(id);
+                    break;
 
-            } else if (accion === 'editar') {
-                editarEstablecimiento(id);
+                case 'estado':
+                    await cambiarEstadoEstablecimiento(id);
+                    break;
 
-            } else if (accion === 'eliminar') {
-                await eliminarEstablecimiento(id);
+                case 'eliminar':
+                    await eliminarEstablecimiento(id);
+                    break;
             }
-
         } finally {
             if (boton.isConnected) {
-                boton.disabled = false;
+                boton.disabled = esVisualizador();
             }
         }
     };
 }
 
 // ======================================================
-// CONSTRUCCIÓN DEL PANEL ADMINISTRATIVO
+// CATEGORÍAS: TABLA
 // ======================================================
 
-function mostrarPanel(usuario) {
+async function cargarTablaCategorias() {
+    const contenedor = obtenerElemento('admin-categories-list');
+    if (!contenedor) return;
+
+    contenedor.innerHTML = '<p>Cargando categorías...</p>';
+
+    const { data: categorias, error } = await supabase
+        .from('categorias')
+        .select('id, nombre, descripcion')
+        .order('nombre', { ascending: true });
+
+    if (error) {
+        console.error('Error al cargar categorías:', error);
+        contenedor.innerHTML = '<p>No fue posible cargar las categorías.</p>';
+        return;
+    }
+
+    const {
+        data: establecimientos,
+        error: errorEstablecimientos
+    } = await supabase
+        .from('establecimientos')
+        .select('categoria_id');
+
+    if (errorEstablecimientos) {
+        console.error(errorEstablecimientos);
+        contenedor.innerHTML = '<p>No fue posible consultar las asociaciones.</p>';
+        return;
+    }
+
+    const cantidades = {};
+
+    (establecimientos || []).forEach((item) => {
+        if (item.categoria_id !== null) {
+            cantidades[item.categoria_id] =
+                (cantidades[item.categoria_id] || 0) + 1;
+        }
+    });
+
+    if (!categorias || categorias.length === 0) {
+        contenedor.innerHTML = '<p>No hay categorías registradas.</p>';
+        return;
+    }
+
+    contenedor.innerHTML = `
+        <div class="admin-table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Establecimientos asociados</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${categorias.map((categoria) => `
+                        <tr>
+                            <td>${escaparHTML(categoria.nombre)}</td>
+                            <td>${escaparHTML(categoria.descripcion || 'Sin descripción')}</td>
+                            <td>${cantidades[categoria.id] || 0}</td>
+                            <td class="admin-actions-cell">
+                                <button
+                                    type="button"
+                                    class="admin-action-button edit"
+                                    data-action="editar"
+                                    data-id="${escaparHTML(categoria.id)}"
+                                    title="Editar categoría"
+                                    ${esVisualizador() ? 'disabled' : ''}
+                                >✎</button>
+
+                                <button
+                                    type="button"
+                                    class="admin-action-button delete"
+                                    data-action="eliminar"
+                                    data-id="${escaparHTML(categoria.id)}"
+                                    title="Eliminar categoría"
+                                    ${esVisualizador() ? 'disabled' : ''}
+                                >✕</button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    contenedor.onclick = async (evento) => {
+        const boton = evento.target.closest('[data-action]');
+
+        if (!boton || !contenedor.contains(boton) || boton.disabled) return;
+
+        const id = boton.dataset.id;
+        boton.disabled = true;
+
+        try {
+            if (boton.dataset.action === 'editar') {
+                const categoria = categorias.find(
+                    item => String(item.id) === String(id)
+                );
+
+                if (categoria) abrirModalCategoria(categoria);
+            }
+
+            if (boton.dataset.action === 'eliminar') {
+                await eliminarCategoria(id);
+            }
+        } finally {
+            if (boton.isConnected) {
+                boton.disabled = esVisualizador();
+            }
+        }
+    };
+}
+
+// ======================================================
+// CATEGORÍAS: ABRIR MODAL
+// ======================================================
+
+function abrirModalCategoria(categoria = null) {
+    if (esVisualizador()) return;
+
+    const modal = obtenerElemento('modal-nueva-categoria');
+    const formulario = obtenerElemento('form-categoria-admin');
+
+    if (!modal || !formulario) return;
+
+    formulario.reset();
+
+    obtenerElemento('categoria-id').value = categoria?.id || '';
+    obtenerElemento('categoria-nombre-admin').value = categoria?.nombre || '';
+    obtenerElemento('categoria-descripcion-admin').value = categoria?.descripcion || '';
+
+    const titulo = modal.querySelector('.admin-modal-header h2');
+    const descripcion = modal.querySelector('.admin-modal-header p');
+
+    if (titulo) {
+        titulo.textContent = categoria ? 'Editar categoría' : 'Nueva categoría';
+    }
+
+    if (descripcion) {
+        descripcion.textContent = categoria
+            ? 'Modifica la información de esta categoría.'
+            : 'Registra una nueva categoría para SIGECO-SOG.';
+    }
+
+    obtenerElemento('guardar-categoria').textContent =
+        categoria ? 'Actualizar categoría' : 'Guardar categoría';
+
+    obtenerElemento('mensaje-categoria-admin').textContent = '';
+
+    modal.hidden = false;
+}
+
+// ======================================================
+// CATEGORÍAS: GUARDAR
+// ======================================================
+
+async function guardarCategoria(evento) {
+    evento.preventDefault();
+
+    if (esVisualizador()) return;
+
+    const formulario = evento.currentTarget;
+    const campoId = obtenerElemento('categoria-id');
+    const campoNombre = obtenerElemento('categoria-nombre-admin');
+    const campoDescripcion = obtenerElemento('categoria-descripcion-admin');
+    const boton = obtenerElemento('guardar-categoria');
+    const mensaje = obtenerElemento('mensaje-categoria-admin');
+    const modal = obtenerElemento('modal-nueva-categoria');
+
+    const id = campoId.value;
+    const nombre = campoNombre.value.trim();
+    const descripcion = campoDescripcion.value.trim();
+    const esEdicion = Boolean(id);
+
+    if (!nombre) {
+        mostrarMensaje(mensaje, 'El nombre de la categoría es obligatorio.');
+        return;
+    }
+
+    boton.disabled = true;
+    boton.textContent = esEdicion ? 'Actualizando...' : 'Guardando...';
+
+    try {
+        if (modal) modal.hidden = true;
+
+        const inicioAnimacion = Date.now();
+
+        reproducirAnimacionAdmin('sol-carga', {
+            loop: true
+        });
+
+        let resultado;
+
+        if (esEdicion) {
+            resultado = await supabase
+                .from('categorias')
+                .update({
+                    nombre,
+                    descripcion: descripcion || null
+                })
+                .eq('id', id);
+        } else {
+            resultado = await supabase
+                .from('categorias')
+                .insert([{
+                    nombre,
+                    descripcion: descripcion || null
+                }]);
+        }
+
+        if (resultado.error) throw resultado.error;
+
+        await Promise.all([
+            cargarTablaCategorias(),
+            cargarEstadisticas(),
+            cargarCategorias()
+        ]);
+
+        await esperarAnimacionMinima(inicioAnimacion);
+        detenerAnimacionAdmin();
+
+        cerrarModal(modal);
+        formulario.reset();
+        campoId.value = '';
+
+        mostrarAlertaConfirmacion(
+            esEdicion
+                ? 'Categoría actualizada correctamente.'
+                : 'Categoría creada correctamente.'
+        );
+
+    } catch (error) {
+        console.error('Error al guardar categoría:', error);
+
+        detenerAnimacionAdmin();
+
+        if (modal) modal.hidden = false;
+
+        mostrarMensaje(
+            mensaje,
+            error.code === '23505'
+                ? 'Ya existe una categoría con ese nombre.'
+                : `Error al guardar: ${error.message || 'Error desconocido'}`
+        );
+
+    } finally {
+        boton.disabled = false;
+        boton.textContent = campoId.value
+            ? 'Actualizar categoría'
+            : 'Guardar categoría';
+    }
+}
+
+// ======================================================
+// CATEGORÍAS: ELIMINAR
+// ======================================================
+
+async function eliminarCategoria(id) {
+    if (esVisualizador()) return;
+
+    const { count, error: errorConteo } = await supabase
+        .from('establecimientos')
+        .select('id', { count: 'exact', head: true })
+        .eq('categoria_id', id);
+
+    if (errorConteo) {
+        mostrarError(
+            'No fue posible comprobar los establecimientos asociados.',
+            errorConteo
+        );
+        return;
+    }
+
+    if (count > 0) {
+        alert(
+            `No puedes eliminar esta categoría porque tiene ${count} establecimiento(s) asociado(s).`
+        );
+        return;
+    }
+
+    await confirmarAccion({
+        titulo: 'Eliminar categoría',
+        descripcion: 'Esta acción no se puede deshacer.',
+        detalle: '¿Estás seguro de que deseas eliminar esta categoría?',
+        mensajeExito: 'Categoría eliminada correctamente.',
+        tipoAnimacion: 'acero-brillo',
+
+        accion: async () => {
+            const { error } = await supabase
+                .from('categorias')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            await Promise.all([
+                cargarTablaCategorias(),
+                cargarEstadisticas(),
+                cargarCategorias()
+            ]);
+        }
+    });
+}
+
+// ======================================================
+// USUARIOS: TABLA
+// ======================================================
+
+async function cargarTablaUsuarios() {
+    if (!esAdministrador()) return;
+
+    const contenedor = obtenerElemento('admin-users-list');
+    if (!contenedor) return;
+
+    contenedor.innerHTML = '<p>Cargando usuarios y permisos...</p>';
+
+    const { data, error } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .order('role', { ascending: true });
+
+    if (error) {
+        console.error('Error al consultar usuarios:', error);
+        contenedor.innerHTML =
+            '<p>No fue posible cargar los usuarios. Verifica las políticas de acceso.</p>';
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        contenedor.innerHTML = '<p>No hay usuarios con roles registrados.</p>';
+        return;
+    }
+
+    contenedor.innerHTML = `
+        <div class="admin-table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Identificador UUID</th>
+                        <th>Rol asignado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.map((usuario) => `
+                        <tr>
+                            <td class="admin-user-uuid">
+                                ${escaparHTML(usuario.user_id)}
+                            </td>
+                            <td>
+                                <span class="admin-role ${['admin', 'principal_admin'].includes(usuario.role) ? 'admin-role-admin' : 'admin-role-user'}">
+                                    ${escaparHTML(usuario.role)}
+                                </span>
+                            </td>
+                            <td class="admin-actions-cell">
+                                <button
+                                    type="button"
+                                    class="admin-action-button edit"
+                                    data-action="editar"
+                                    data-id="${escaparHTML(usuario.user_id)}"
+                                    title="Editar rol"
+                                >✎</button>
+
+                                <button
+                                    type="button"
+                                    class="admin-action-button delete"
+                                    data-action="eliminar"
+                                    data-id="${escaparHTML(usuario.user_id)}"
+                                    title="Retirar rol"
+                                >✕</button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+
+        <p class="admin-users-note">
+            Este módulo administra los roles de cuentas existentes.
+            No crea ni elimina cuentas de autenticación.
+        </p>
+    `;
+
+    contenedor.onclick = async (evento) => {
+        const boton = evento.target.closest('[data-action]');
+
+        if (!boton || !contenedor.contains(boton) || boton.disabled) return;
+
+        const userId = boton.dataset.id;
+        boton.disabled = true;
+
+        try {
+            if (boton.dataset.action === 'editar') {
+                const usuario = data.find(item => item.user_id === userId);
+
+                if (usuario) abrirModalUsuario(usuario);
+            }
+
+            if (boton.dataset.action === 'eliminar') {
+                await eliminarUsuario(userId);
+            }
+        } finally {
+            if (boton.isConnected) boton.disabled = false;
+        }
+    };
+}
+
+// ======================================================
+// USUARIOS: ABRIR MODAL
+// ======================================================
+
+function abrirModalUsuario(usuario = null) {
+    if (!esAdministrador()) return;
+
+    const modal = obtenerElemento('modal-nuevo-usuario');
+    const formulario = obtenerElemento('form-usuario-admin');
+
+    if (!modal || !formulario) return;
+
+    formulario.reset();
+
+    usuarioEnEdicion = usuario?.user_id || null;
+
+    const campoUuid = obtenerElemento('usuario-uuid-admin');
+    const campoRol = obtenerElemento('usuario-rol-admin');
+
+    campoUuid.value = usuario?.user_id || '';
+    campoUuid.readOnly = Boolean(usuario);
+
+    const rolExistente = usuario?.role;
+
+    if (
+        rolExistente &&
+        !Array.from(campoRol.options).some(opcion => opcion.value === rolExistente)
+    ) {
+        const opcion = document.createElement('option');
+        opcion.value = rolExistente;
+        opcion.textContent = rolExistente;
+        campoRol.appendChild(opcion);
+    }
+
+    campoRol.value = rolExistente || '';
+
+    const titulo = modal.querySelector('.admin-modal-header h2');
+    const descripcion = modal.querySelector('.admin-modal-header p');
+
+    if (titulo) {
+        titulo.textContent = usuario ? 'Editar permisos' : 'Asignar usuario';
+    }
+
+    if (descripcion) {
+        descripcion.textContent = usuario
+            ? 'Modifica el rol asignado a esta cuenta.'
+            : 'Asigna un rol a una cuenta existente en Supabase Auth.';
+    }
+
+    obtenerElemento('guardar-usuario').textContent =
+        usuario ? 'Actualizar permisos' : 'Asignar rol';
+
+    obtenerElemento('mensaje-usuario-admin').textContent = '';
+
+    modal.hidden = false;
+}
+
+// ======================================================
+// USUARIOS: ASIGNAR O ACTUALIZAR ROL
+// ======================================================
+
+async function guardarUsuario(evento) {
+    evento.preventDefault();
+
+    if (!esAdministrador()) return;
+
+    const formulario = evento.currentTarget;
+    const campoUuid = obtenerElemento('usuario-uuid-admin');
+    const campoRol = obtenerElemento('usuario-rol-admin');
+    const boton = obtenerElemento('guardar-usuario');
+    const mensaje = obtenerElemento('mensaje-usuario-admin');
+    const modal = obtenerElemento('modal-nuevo-usuario');
+
+    const userId = campoUuid.value.trim();
+    const role = campoRol.value;
+    const modoEdicion = usuarioEnEdicion !== null;
+    const userIdEdicion = usuarioEnEdicion;
+
+    const expresionUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    if (!expresionUuid.test(userId)) {
+        mostrarMensaje(mensaje, 'Ingresa un UUID válido.');
+        return;
+    }
+
+    if (!role) {
+        mostrarMensaje(mensaje, 'Selecciona un rol.');
+        return;
+    }
+
+    boton.disabled = true;
+    boton.textContent = modoEdicion ? 'Actualizando...' : 'Asignando...';
+
+    try {
+        if (modal) modal.hidden = true;
+
+        const inicioAnimacion = Date.now();
+
+        reproducirAnimacionAdmin('sol-carga', {
+            loop: true
+        });
+
+        let resultado;
+
+        if (modoEdicion) {
+            resultado = await supabase
+                .from('user_roles')
+                .update({ role })
+                .eq('user_id', userIdEdicion);
+        } else {
+            resultado = await supabase
+                .from('user_roles')
+                .insert([{
+                    user_id: userId,
+                    role
+                }]);
+        }
+
+        if (resultado.error) throw resultado.error;
+
+        await Promise.all([
+            cargarTablaUsuarios(),
+            cargarEstadisticas()
+        ]);
+
+        await esperarAnimacionMinima(inicioAnimacion);
+        detenerAnimacionAdmin();
+
+        cerrarModal(modal);
+        formulario.reset();
+
+        usuarioEnEdicion = null;
+
+        mostrarAlertaConfirmacion(
+            modoEdicion
+                ? 'Permisos actualizados correctamente.'
+                : 'Rol asignado correctamente.'
+        );
+
+    } catch (error) {
+        console.error('Error al guardar el usuario:', {
+            mensaje: error.message,
+            codigo: error.code,
+            detalles: error.details,
+            sugerencia: error.hint
+        });
+
+        detenerAnimacionAdmin();
+
+        if (modal) modal.hidden = false;
+
+        let texto =
+            'No fue posible guardar el rol. Verifica los permisos de Supabase.';
+
+        if (error.code === '23505') {
+            texto = 'Este usuario ya tiene un rol registrado.';
+        } else if (error.code === '23503') {
+            texto = 'El UUID no corresponde a una cuenta existente en Supabase Auth.';
+        } else if (error.code === '22P02') {
+            texto = 'El UUID ingresado no tiene un formato válido.';
+        }
+
+        mostrarMensaje(mensaje, texto);
+
+    } finally {
+        boton.disabled = false;
+        boton.textContent = usuarioEnEdicion !== null
+            ? 'Actualizar permisos'
+            : 'Asignar rol';
+    }
+}
+
+// ======================================================
+// USUARIOS: ELIMINAR ASIGNACIÓN DE ROL
+// ======================================================
+
+async function eliminarUsuario(userId) {
+    if (!esAdministrador()) return;
+
+    const { data: usuario, error } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .eq('user_id', userId)
+        .single();
+
+    if (error || !usuario) {
+        mostrarError('No fue posible consultar el rol del usuario.', error);
+        return;
+    }
+
+    if (['admin', 'principal_admin'].includes(usuario.role)) {
+        const rolesProtegidos = ['admin', 'principal_admin'];
+
+        const { data: administradores, error: errorConteo } = await supabase
+            .from('user_roles')
+            .select('user_id, role')
+            .in('role', rolesProtegidos);
+
+        if (errorConteo) {
+            mostrarError('No fue posible comprobar los administradores.', errorConteo);
+            return;
+        }
+
+        if (
+            usuario.role === 'principal_admin' &&
+            (administradores || []).filter(item => item.role === 'principal_admin').length <= 1
+        ) {
+            alert('No puedes retirar el rol del último administrador principal.');
+            return;
+        }
+
+        if (
+            usuario.role === 'admin' &&
+            (administradores || []).filter(item => item.role === 'admin').length <= 1
+        ) {
+            alert('No puedes retirar el rol del último administrador.');
+            return;
+        }
+    }
+
+    await confirmarAccion({
+        titulo: 'Retirar permisos',
+        descripcion: 'Se eliminará la asignación de rol.',
+        detalle:
+            '¿Deseas retirar el rol de este usuario? Su cuenta de Supabase Auth permanecerá intacta.',
+        mensajeExito: 'La asignación de rol fue eliminada correctamente.',
+        tipoAnimacion: 'acero-brillo',
+
+        accion: async () => {
+            const { error: errorEliminar } = await supabase
+                .from('user_roles')
+                .delete()
+                .eq('user_id', userId);
+
+            if (errorEliminar) throw errorEliminar;
+
+            await Promise.all([
+                cargarTablaUsuarios(),
+                cargarEstadisticas()
+            ]);
+        }
+    });
+}
+
+// ======================================================
+// PANEL PRINCIPAL
+// ======================================================
+
+function mostrarPanel(usuario, rol) {
+    rolActual = rol;
+
+    const nombresRoles = {
+        principal_admin: 'Administrador principal',
+        admin: 'Administrador',
+        editor: 'Editor',
+        viewer: 'Visualizador'
+    };
+
     adminApp.innerHTML = `
         <div class="admin-layout">
 
@@ -724,71 +1568,27 @@ function mostrarPanel(usuario) {
                 </div>
 
                 <nav class="admin-menu">
-
                     <button class="active" data-section="inicio">
-                        <svg viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                            stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <rect x="3" y="3" width="8" height="8" rx="1.5"/>
-                            <rect x="13" y="3" width="8" height="5" rx="1.5"/>
-                            <rect x="13" y="10" width="8" height="11" rx="1.5"/>
-                            <rect x="3" y="13" width="8" height="8" rx="1.5"/>
-                        </svg>
                         <span>Panel principal</span>
                     </button>
 
                     <button data-section="establecimientos">
-                        <svg viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                            stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <path d="M3 10h18l-2-6H5l-2 6Z"/>
-                            <path d="M4 10v10h16V10"/>
-                            <path d="M9 20v-6h6v6"/>
-                            <path d="M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/>
-                        </svg>
                         <span>Establecimientos</span>
                     </button>
 
                     <button data-section="categorias">
-                        <svg viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                            stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <path d="M4 4h7v7H4z"/>
-                            <path d="M15 4h5v5h-5z"/>
-                            <path d="M15 13h5v7h-5z"/>
-                            <path d="M4 15h7v5H4z"/>
-                        </svg>
                         <span>Categorías</span>
                     </button>
 
-                    <button data-section="usuarios">
-                        <svg viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                            stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <circle cx="9" cy="8" r="4"/>
-                            <path d="M2 21v-2a7 7 0 0 1 14 0v2"/>
-                            <path d="M19 8v6"/>
-                            <path d="M16 11h6"/>
-                        </svg>
-                        <span>Usuarios y permisos</span>
-                    </button>
-
+                    ${esAdministrador() ? `
+                        <button data-section="usuarios">
+                            <span>Usuarios y permisos</span>
+                        </button>
+                    ` : ''}
                 </nav>
 
                 <div class="admin-sidebar-footer">
-                    <button id="admin-logout">
+                    <button id="admin-logout" type="button">
                         Cerrar sesión
                     </button>
                 </div>
@@ -804,39 +1604,38 @@ function mostrarPanel(usuario) {
                     </div>
 
                     <div class="admin-user">
-                        Administrador: ${escaparHTML(usuario.email)}
+                        ${escaparHTML(nombresRoles[rolActual] || 'Usuario')}:
+                        ${escaparHTML(usuario.email || usuario.id)}
                     </div>
                 </header>
 
                 <section class="admin-stats">
 
                     <article class="admin-stat-card">
-                        <span>Establecimientos registrados</span>
+                        <span>Establecimientos activos</span>
                         <h2 id="total-establecimientos">--</h2>
                     </article>
 
                     <article class="admin-stat-card">
-                        <span>Categorías disponibles</span>
+                        <span>Categorías registradas</span>
                         <h2 id="total-categorias">--</h2>
                     </article>
 
-                    <article class="admin-stat-card">
-                        <span>Usuarios administrativos</span>
-                        <h2 id="total-usuarios">--</h2>
-                    </article>
+                    ${esAdministrador() ? `
+                        <article class="admin-stat-card">
+                            <span>Usuarios con rol</span>
+                            <h2 id="total-usuarios">--</h2>
+                        </article>
+                    ` : ''}
 
                 </section>
 
-                <section
-                    class="admin-content"
-                    id="admin-section-content"
-                >
+                <section class="admin-content" id="admin-section-content">
                     <h2>Bienvenido a SIGECO-SOG</h2>
-
                     <p>
-                        Desde este espacio podrás gestionar la información
-                        de los establecimientos, las categorías y los
-                        usuarios autorizados del sistema.
+                        Desde este espacio puedes administrar los
+                        establecimientos, las categorías y los permisos
+                        de acceso al sistema.
                     </p>
                 </section>
 
@@ -845,14 +1644,12 @@ function mostrarPanel(usuario) {
         </div>
     `;
 
-    // Las estadísticas se cargan después de construir el panel.
     cargarEstadisticas();
 
-    // Configura el cierre de sesión.
-    document
-        .querySelector('#admin-logout')
-        .addEventListener('click', async () => {
-            const boton = document.querySelector('#admin-logout');
+    obtenerElemento('admin-logout').addEventListener(
+        'click',
+        async (evento) => {
+            const boton = evento.currentTarget;
 
             boton.disabled = true;
             boton.textContent = 'Cerrando sesión...';
@@ -870,102 +1667,67 @@ function mostrarPanel(usuario) {
             }
 
             window.location.replace('/');
-        });
+        }
+    );
 
-    // Configura la navegación entre módulos.
-    document
-        .querySelectorAll('.admin-menu button')
-        .forEach((boton) => {
-            boton.addEventListener('click', () => {
-                document
-                    .querySelectorAll('.admin-menu button')
-                    .forEach((elemento) => {
-                        elemento.classList.remove('active');
-                    });
+    document.querySelectorAll('.admin-menu button').forEach((boton) => {
+        boton.addEventListener('click', () => {
+            document.querySelectorAll('.admin-menu button').forEach((elemento) => {
+                elemento.classList.remove('active');
+            });
 
-                boton.classList.add('active');
+            boton.classList.add('active');
 
-                const seccion = boton.dataset.section;
+            const contenido = obtenerElemento('admin-section-content');
+            const titulo = document.querySelector('.admin-topbar h1');
+            const seccion = boton.dataset.section;
 
-                const contenido = document.querySelector(
-                    '#admin-section-content'
-                );
+            const titulos = {
+                inicio: 'Panel principal',
+                establecimientos: 'Gestión de establecimientos',
+                categorias: 'Gestión de categorías',
+                usuarios: 'Usuarios y permisos'
+            };
 
-                const titulo = document.querySelector(
-                    '.admin-topbar h1'
-                );
+            titulo.textContent = titulos[seccion] || 'Panel principal';
 
-                const nombres = {
-                    inicio: 'Panel principal',
-                    establecimientos: 'Gestión de establecimientos',
-                    categorias: 'Gestión de categorías',
-                    usuarios: 'Usuarios y permisos'
-                };
+            switch (seccion) {
+                case 'establecimientos':
+                    mostrarSeccionEstablecimientos(contenido);
+                    break;
 
-                titulo.textContent = nombres[seccion];
+                case 'categorias':
+                    mostrarSeccionCategorias(contenido);
+                    break;
 
-                // ------------------------------------------
-                // SECCIÓN INICIO
-                // ------------------------------------------
+                case 'usuarios':
+                    if (esAdministrador()) {
+                        mostrarSeccionUsuarios(contenido);
+                    } else {
+                        contenido.innerHTML = `
+                            <h2>Acceso restringido</h2>
+                            <p>No tienes permisos para gestionar usuarios.</p>
+                        `;
+                    }
+                    break;
 
-                if (seccion === 'inicio') {
+                default:
                     contenido.innerHTML = `
                         <h2>Bienvenido a SIGECO-SOG</h2>
-
                         <p>
-                            Desde este espacio podrás gestionar la
-                            información de los establecimientos,
-                            las categorías y los usuarios autorizados
-                            del sistema.
+                            Desde este espacio puedes administrar los
+                            establecimientos, las categorías y los permisos
+                            de acceso al sistema.
                         </p>
                     `;
-                }
-
-                // ------------------------------------------
-                // SECCIÓN ESTABLECIMIENTOS
-                // ------------------------------------------
-
-                else if (seccion === 'establecimientos') {
-                    mostrarSeccionEstablecimientos(contenido);
-                }
-
-                // ------------------------------------------
-                // SECCIÓN CATEGORÍAS
-                // ------------------------------------------
-
-                else if (seccion === 'categorias') {
-                    contenido.innerHTML = `
-                        <h2>Gestión de categorías</h2>
-
-                        <p>
-                            Este módulo permitirá administrar las
-                            categorías de establecimientos y
-                            emprendimientos.
-                        </p>
-                    `;
-                }
-
-                // ------------------------------------------
-                // SECCIÓN USUARIOS
-                // ------------------------------------------
-
-                else if (seccion === 'usuarios') {
-                    contenido.innerHTML = `
-                        <h2>Usuarios y permisos</h2>
-
-                        <p>
-                            Este módulo permitirá administrar los
-                            usuarios autorizados y sus permisos
-                            dentro de SIGECO-SOG.
-                        </p>
-                    `;
-                }
-            });
+                    break;
+            }
         });
+    });
 }
 
 // ======================================================
-// INTERFAZ DE GESTIÓN DE ESTABLECIMIENTOS
+// SECCIÓN ESTABLECIMIENTOS
 // ======================================================
 
 function mostrarSeccionEstablecimientos(contenido) {
@@ -973,7 +1735,6 @@ function mostrarSeccionEstablecimientos(contenido) {
         <div class="admin-section-header">
             <div>
                 <h2>Establecimientos registrados</h2>
-
                 <p>
                     Consulta y administra los establecimientos
                     y emprendimientos de Sogamoso.
@@ -983,6 +1744,8 @@ function mostrarSeccionEstablecimientos(contenido) {
             <button
                 id="btn-nuevo-establecimiento"
                 class="admin-primary-button"
+                type="button"
+                ${esVisualizador() ? 'disabled' : ''}
             >
                 <span>+</span> Nuevo establecimiento
             </button>
@@ -1000,10 +1763,8 @@ function mostrarSeccionEstablecimientos(contenido) {
                 <div class="admin-modal-header">
                     <div>
                         <h2>Nuevo establecimiento</h2>
-
                         <p>
-                            Registra un establecimiento o emprendimiento
-                            en SIGECO-SOG.
+                            Registra un establecimiento o emprendimiento en SIGECO-SOG.
                         </p>
                     </div>
 
@@ -1011,9 +1772,8 @@ function mostrarSeccionEstablecimientos(contenido) {
                         type="button"
                         id="cerrar-modal-establecimiento"
                         class="admin-modal-close"
-                    >
-                        &times;
-                    </button>
+                        aria-label="Cerrar"
+                    >&times;</button>
                 </div>
 
                 <form id="form-nuevo-establecimiento">
@@ -1022,7 +1782,6 @@ function mostrarSeccionEstablecimientos(contenido) {
 
                         <div class="admin-form-group">
                             <label for="nuevo-nombre">Nombre *</label>
-
                             <input
                                 type="text"
                                 id="nuevo-nombre"
@@ -1033,37 +1792,28 @@ function mostrarSeccionEstablecimientos(contenido) {
 
                         <div class="admin-form-group">
                             <label for="nueva-categoria">Categoría *</label>
-
                             <select id="nueva-categoria" required>
-                                <option value="">
-                                    Seleccionar categoría
-                                </option>
+                                <option value="">Seleccionar categoría</option>
                             </select>
                         </div>
 
                         <div class="admin-form-group admin-form-full">
-                            <label for="nueva-descripcion">
-                                Descripción
-                            </label>
-
+                            <label for="nueva-descripcion">Descripción</label>
                             <textarea
                                 id="nueva-descripcion"
                                 rows="3"
-                                placeholder="Describe brevemente el establecimiento o emprendimiento"
+                                placeholder="Descripción del establecimiento"
                             ></textarea>
                         </div>
 
                         <div class="admin-form-group admin-form-full">
-                            <label for="nueva-direccion">
-                                Dirección *
-                            </label>
+                            <label for="nueva-direccion">Dirección *</label>
 
                             <div class="admin-address-search">
                                 <input
                                     type="text"
                                     id="nueva-direccion"
-                                    placeholder="Ej. Carrera 11 # 15-20, Sogamoso"
-                                    autocomplete="street-address"
+                                    placeholder="Dirección en Sogamoso"
                                     required
                                 >
 
@@ -1079,7 +1829,6 @@ function mostrarSeccionEstablecimientos(contenido) {
 
                         <div class="admin-form-group">
                             <label for="nuevo-telefono">Teléfono</label>
-
                             <input
                                 type="tel"
                                 id="nuevo-telefono"
@@ -1088,10 +1837,7 @@ function mostrarSeccionEstablecimientos(contenido) {
                         </div>
 
                         <div class="admin-form-group">
-                            <label for="nuevo-correo">
-                                Correo electrónico
-                            </label>
-
+                            <label for="nuevo-correo">Correo electrónico</label>
                             <input
                                 type="email"
                                 id="nuevo-correo"
@@ -1101,11 +1847,10 @@ function mostrarSeccionEstablecimientos(contenido) {
 
                         <div class="admin-form-group admin-form-full">
                             <label>Ubicación geográfica</label>
-
                             <p class="admin-map-help">
-                                Busca la dirección y selecciona el punto
-                                exacto en el mapa. También puedes mover
-                                el marcador para ajustar la ubicación.
+                                Busca la dirección y selecciona el punto exacto
+                                en el mapa. Puedes mover el marcador para ajustar
+                                la ubicación.
                             </p>
 
                             <div id="mapa-nuevo-establecimiento"></div>
@@ -1120,7 +1865,10 @@ function mostrarSeccionEstablecimientos(contenido) {
 
                     </div>
 
-                    <div id="mensaje-nuevo-establecimiento"></div>
+                    <div
+                        id="mensaje-nuevo-establecimiento"
+                        role="status"
+                    ></div>
 
                     <div class="admin-form-actions">
                         <button
@@ -1140,88 +1888,327 @@ function mostrarSeccionEstablecimientos(contenido) {
                     </div>
 
                 </form>
-
             </div>
         </div>
     `;
 
-    // Carga los datos de la tabla y el selector de categorías.
-    cargarEstablecimientos(
-        document.querySelector('#admin-establishments-list')
-    );
-
+    cargarEstablecimientos(obtenerElemento('admin-establishments-list'));
     cargarCategorias();
 
-    // Referencias a los elementos del formulario.
-    const modal = document.querySelector(
-        '#modal-nuevo-establecimiento'
+    const modal = obtenerElemento('modal-nuevo-establecimiento');
+    const formulario = obtenerElemento('form-nuevo-establecimiento');
+
+    obtenerElemento('btn-nuevo-establecimiento').addEventListener(
+        'click',
+        async () => {
+            if (esVisualizador()) return;
+
+            establecimientoEnEdicion = null;
+
+            formulario.reset();
+
+            const titulo = modal.querySelector('.admin-modal-header h2');
+            const descripcion = modal.querySelector('.admin-modal-header p');
+
+            titulo.textContent = 'Nuevo establecimiento';
+
+            descripcion.textContent =
+                'Registra un establecimiento o emprendimiento en SIGECO-SOG.';
+
+            formulario.querySelector('button[type="submit"]').textContent =
+                'Guardar establecimiento';
+
+            obtenerElemento('mensaje-nuevo-establecimiento').textContent = '';
+
+            await cargarCategorias();
+
+            modal.hidden = false;
+
+            requestAnimationFrame(() => {
+                inicializarMapaUbicacion();
+                restablecerUbicacion();
+            });
+        }
     );
 
-    const botonNuevo = document.querySelector(
-        '#btn-nuevo-establecimiento'
+    obtenerElemento('btn-buscar-ubicacion').addEventListener(
+        'click',
+        (evento) => buscarDireccion(evento)
     );
 
-    const botonCerrar = document.querySelector(
-        '#cerrar-modal-establecimiento'
-    );
-
-    const botonCancelar = document.querySelector(
-        '#cancelar-modal-establecimiento'
-    );
-
-    const botonBuscar = document.querySelector(
-        '#btn-buscar-ubicacion'
-    );
-
-    const formulario = document.querySelector(
-        '#form-nuevo-establecimiento'
-    );
-
- // Abre el formulario para registrar un establecimiento nuevo.
-botonNuevo.addEventListener('click', async () => {
-    establecimientoEnEdicion = null;
-
-    formulario.reset();
-
-    modal.querySelector('.admin-modal-header h2').textContent =
-        'Nuevo establecimiento';
-
-    modal.querySelector('.admin-modal-header p').textContent =
-        'Registra un establecimiento o emprendimiento en SIGECO-SOG.';
-
-    formulario.querySelector('button[type="submit"]').textContent =
-        'Guardar establecimiento';
-
-    document.querySelector('#mensaje-nuevo-establecimiento').textContent =
-        '';
-
-    await cargarCategorias();
-
-    modal.hidden = false;
-
-   requestAnimationFrame(() => {
-    inicializarMapaUbicacion();
-    restablecerUbicacion();
-});
-});
-
-    // Ejecuta la búsqueda de dirección.
-    botonBuscar.addEventListener('click', buscarDireccion);
-
-    // Conecta el formulario con el registro en Supabase.
     formulario.addEventListener('submit', guardarEstablecimiento);
 
-    // Cierra el formulario.
-    function cerrarModal() {
+    const cerrar = () => {
         modal.hidden = true;
-    }
+    };
 
-    botonCerrar.addEventListener('click', cerrarModal);
-    botonCancelar.addEventListener('click', cerrarModal);
+    obtenerElemento('cerrar-modal-establecimiento').addEventListener('click', cerrar);
+    obtenerElemento('cancelar-modal-establecimiento').addEventListener('click', cerrar);
 }
 
 // ======================================================
-// INICIO DEL SISTEMA
+// SECCIÓN CATEGORÍAS
+// ======================================================
+
+function mostrarSeccionCategorias(contenido) {
+    contenido.innerHTML = `
+        <div class="admin-section-header">
+            <div>
+                <h2>Categorías registradas</h2>
+                <p>
+                    Administra las categorías utilizadas para clasificar
+                    establecimientos y emprendimientos.
+                </p>
+            </div>
+
+            <button
+                id="btn-nueva-categoria"
+                class="admin-primary-button"
+                type="button"
+                ${esVisualizador() ? 'disabled' : ''}
+            >
+                <span>+</span> Nueva categoría
+            </button>
+        </div>
+
+        <div id="admin-categories-list"></div>
+
+        <div
+            id="modal-nueva-categoria"
+            class="admin-modal-overlay"
+            hidden
+        >
+            <div class="admin-modal">
+
+                <div class="admin-modal-header">
+                    <div>
+                        <h2>Nueva categoría</h2>
+                        <p>Registra una categoría para SIGECO-SOG.</p>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="cerrar-modal-categoria"
+                        class="admin-modal-close"
+                        aria-label="Cerrar"
+                    >&times;</button>
+                </div>
+
+                <form id="form-categoria-admin">
+                    <input type="hidden" id="categoria-id">
+
+                    <div class="admin-form-group">
+                        <label for="categoria-nombre-admin">
+                            Nombre de la categoría *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="categoria-nombre-admin"
+                            maxlength="100"
+                            placeholder="Ej. Restaurantes"
+                            required
+                        >
+                    </div>
+
+                    <div class="admin-form-group">
+                        <label for="categoria-descripcion-admin">
+                            Descripción
+                        </label>
+
+                        <textarea
+                            id="categoria-descripcion-admin"
+                            rows="4"
+                            placeholder="Describe brevemente esta categoría"
+                        ></textarea>
+                    </div>
+
+                    <div id="mensaje-categoria-admin" role="status"></div>
+
+                    <div class="admin-form-actions">
+                        <button
+                            type="button"
+                            id="cancelar-modal-categoria"
+                            class="admin-secondary-button"
+                        >
+                            Cancelar
+                        </button>
+
+                        <button
+                            type="submit"
+                            id="guardar-categoria"
+                            class="admin-primary-button"
+                        >
+                            Guardar categoría
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+
+    cargarTablaCategorias();
+
+    const modal = obtenerElemento('modal-nueva-categoria');
+
+    obtenerElemento('btn-nueva-categoria').addEventListener(
+        'click',
+        () => abrirModalCategoria()
+    );
+
+    obtenerElemento('form-categoria-admin').addEventListener(
+        'submit',
+        guardarCategoria
+    );
+
+    const cerrar = () => cerrarModal(modal);
+
+    obtenerElemento('cerrar-modal-categoria').addEventListener('click', cerrar);
+    obtenerElemento('cancelar-modal-categoria').addEventListener('click', cerrar);
+}
+
+// ======================================================
+// SECCIÓN USUARIOS
+// ======================================================
+
+function mostrarSeccionUsuarios(contenido) {
+    if (!esAdministrador()) {
+        contenido.innerHTML = `
+            <h2>Acceso restringido</h2>
+            <p>No tienes permisos para gestionar usuarios.</p>
+        `;
+        return;
+    }
+
+    contenido.innerHTML = `
+        <div class="admin-section-header">
+            <div>
+                <h2>Usuarios y permisos</h2>
+                <p>
+                    Administra los roles de las cuentas autorizadas
+                    para acceder al sistema.
+                </p>
+            </div>
+
+            <button
+                id="btn-nuevo-usuario"
+                class="admin-primary-button"
+                type="button"
+            >
+                <span>+</span> Asignar usuario
+            </button>
+        </div>
+
+        <div id="admin-users-list"></div>
+
+        <div
+            id="modal-nuevo-usuario"
+            class="admin-modal-overlay"
+            hidden
+        >
+            <div class="admin-modal">
+
+                <div class="admin-modal-header">
+                    <div>
+                        <h2>Asignar usuario</h2>
+                        <p>
+                            Asigna un rol a una cuenta existente
+                            en Supabase Auth.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="cerrar-modal-usuario"
+                        class="admin-modal-close"
+                        aria-label="Cerrar"
+                    >&times;</button>
+                </div>
+
+                <form id="form-usuario-admin">
+
+                    <div class="admin-form-group">
+                        <label for="usuario-uuid-admin">
+                            UUID del usuario *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="usuario-uuid-admin"
+                            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                            autocomplete="off"
+                            required
+                        >
+
+                        <small>
+                            Debe corresponder a una cuenta que ya exista
+                            en Supabase Auth.
+                        </small>
+                    </div>
+
+                    <div class="admin-form-group">
+                        <label for="usuario-rol-admin">
+                            Rol del usuario *
+                        </label>
+
+                        <select id="usuario-rol-admin" required>
+                            <option value="">Selecciona un rol</option>
+                            <option value="admin">Administrador</option>
+                            <option value="editor">Editor</option>
+                            <option value="viewer">Visualizador</option>
+                        </select>
+                    </div>
+
+                    <div id="mensaje-usuario-admin" role="status"></div>
+
+                    <div class="admin-form-actions">
+                        <button
+                            type="button"
+                            id="cancelar-modal-usuario"
+                            class="admin-secondary-button"
+                        >
+                            Cancelar
+                        </button>
+
+                        <button
+                            type="submit"
+                            id="guardar-usuario"
+                            class="admin-primary-button"
+                        >
+                            Asignar rol
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    `;
+
+    cargarTablaUsuarios();
+
+    const modal = obtenerElemento('modal-nuevo-usuario');
+
+    obtenerElemento('btn-nuevo-usuario').addEventListener(
+        'click',
+        () => abrirModalUsuario()
+    );
+
+    obtenerElemento('form-usuario-admin').addEventListener(
+        'submit',
+        guardarUsuario
+    );
+
+    const cerrar = () => {
+        usuarioEnEdicion = null;
+        cerrarModal(modal);
+    };
+
+    obtenerElemento('cerrar-modal-usuario').addEventListener('click', cerrar);
+    obtenerElemento('cancelar-modal-usuario').addEventListener('click', cerrar);
+}
+
+// ======================================================
+// INICIALIZACIÓN
 // ======================================================
 
 verificarAcceso();

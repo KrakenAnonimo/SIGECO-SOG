@@ -1,27 +1,136 @@
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+    <!-- Configuración general -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<link rel="icon" type="image/png" href="/src/Icons/iconpagina.jpg">
     <title>Administración | SIGECO-SOG</title>
-
     <meta name="description" content="Panel administrativo del sistema SIGECO-SOG.">
 
+    <!-- Estilos del panel -->
     <link rel="stylesheet" href="/src/css/admin.css">
 </head>
 
 <body>
 
-    <!-- Contenedor principal del panel administrativo -->
+    <!-- Panel administrativo dinámico -->
     <div id="admin-app">
+        <!-- El contenido se genera desde admin.js -->
+    </div>
 
-        <!-- El panel administrativo se construirá aquí -->
+
+    <!-- Modal de confirmación y resultado -->
+    <div id="modal-confirmar-estado" class="admin-modal-overlay" hidden>
+
+        <div class="admin-modal admin-modal-confirmacion">
+
+            <!-- Encabezado -->
+            <div class="admin-modal-header">
+
+                <div>
+                    <h2 id="titulo-confirmacion-estado">
+                        Confirmar acción
+                    </h2>
+
+                    <p id="descripcion-confirmacion-estado">
+                        Revisa las consecuencias antes de continuar.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    id="cerrar-modal-confirmacion-estado"
+                    class="admin-modal-close"
+                    aria-label="Cerrar ventana"
+                >
+                    &times;
+                </button>
+
+            </div>
+
+            <!-- Mensaje de confirmación o resultado -->
+            <div class="admin-form-group">
+
+                <p id="detalle-confirmacion-estado"></p>
+
+                <div id="resultado-confirmacion-estado" hidden>
+                    <p id="mensaje-resultado-estado">
+                        ¡Cambio realizado correctamente!
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Acciones -->
+            <div class="admin-form-actions">
+
+                <button
+                    type="button"
+                    id="cancelar-confirmacion-estado"
+                    class="admin-secondary-button"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="button"
+                    id="aceptar-confirmacion-estado"
+                    class="admin-primary-button"
+                >
+                    Confirmar
+                </button>
+
+            </div>
+
+        </div>
 
     </div>
 
-    <!-- Archivo JavaScript del panel -->
+
+   
+<!-- Transición institucional Sol y Acero -->
+<div id="transicion-sol-acero" class="sol-acero-overlay" hidden>
+
+    <div class="sol-acero-contenido">
+
+        <!-- Símbolo animado -->
+        <div id="animacion-sol-acero" class="sol-acero-container animacion-visible">
+            <div class="sol-acero-escena">
+                <div class="simbolo-acero"></div>
+                <div class="simbolo-sol"></div>
+            </div>
+        </div>
+
+        <!-- Información del proceso -->
+        <h2 id="titulo-sol-acero">Sol y Acero</h2>
+
+        <p id="nombre-sol-acero">
+            Actualizando establecimiento
+        </p>
+
+        <p id="mensaje-sol-acero">
+            Preparando transformación...
+        </p>
+
+        <!-- Indicador de carga -->
+        <div class="sol-acero-progreso">
+            <div class="sol-acero-progreso-barra"></div>
+        </div>
+
+        <span class="sol-acero-pie">
+            SIGECO-SOG · Sogamoso, Boyacá
+        </span>
+
+    </div>
+
+</div>
+
+
+
+    <!-- Lógica del panel administrativo -->
     <script type="module" src="/src/js/admin.js"></script>
 
 </body>

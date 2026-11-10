@@ -177,6 +177,7 @@ const adminEmail = document.querySelector('#admin-email');
 const adminPassword = document.querySelector('#admin-password');
 const adminLoginMessage = document.querySelector('#admin-login-message');
 
+
 // Gestiona el inicio de sesión del administrador.
 adminLoginForm.addEventListener('submit', async (evento) => {
     evento.preventDefault();
@@ -207,21 +208,30 @@ adminLoginForm.addEventListener('submit', async (evento) => {
         .eq('user_id', data.user.id)
         .single();
 
+    // Roles autorizados.
+    const rolesPermitidos = [
+        'principal_admin',
+        'admin',
+        'editor',
+        'viewer'
+    ];
+
     // Usuario sin permisos.
-    if (errorRol || !rol || rol.role !== 'admin') {
+    if (errorRol || !rol || !rolesPermitidos.includes(rol.role)) {
         await supabase.auth.signOut();
         mostrarMensaje('Acceso denegado. No tienes permisos administrativos.', 'error');
         return;
     }
 
     // Inicio de sesión correcto.
-mostrarMensaje('¡Acceso autorizado! Bienvenido al panel administrativo.', 'success');
+    mostrarMensaje('¡Acceso autorizado! Bienvenido al panel administrativo.', 'success');
 
-// Redirige al administrador al panel independiente.
-setTimeout(() => {
-    window.location.href = '/admin.html';
-}, 1200);
+    // Redirige al usuario al panel independiente.
+    setTimeout(() => {
+        window.location.href = '/admin.html';
+    }, 1200);
 });
+
 // Abre la ventana al pulsar el icono administrativo.
 adminAccessButton.addEventListener('click', (evento) => {
     evento.preventDefault();
@@ -229,6 +239,7 @@ adminAccessButton.addEventListener('click', (evento) => {
     adminModal.classList.add('active');
     adminModal.setAttribute('aria-hidden', 'false');
 });
+
 
 // Cierra la ventana mediante el botón de cierre.
 closeAdminButton.addEventListener('click', () => {

@@ -1,20 +1,131 @@
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+    <!-- Define la codificación de caracteres para mostrar correctamente los textos. -->
     <meta charset="UTF-8">
+
+    <!-- Adapta la página al tamaño de pantalla de computadores, tabletas y celulares. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Describe el propósito del sistema para los buscadores y navegadores. -->
     <meta name="description" content="SIGECO-SOG: Sistema de Información Georreferenciada para la Caracterización y Consulta de la Oferta Local de Sogamoso, Boyacá.">
 
+    <!-- Define el título que aparece en la pestaña del navegador. -->
     <title>SIGECO-SOG | Oferta local de Sogamoso</title>
 
+    <!-- Carga los estilos propios de la aplicación. -->
     <link rel="stylesheet" href="/src/css/style.css">
+
+    <!-- Carga los estilos de Leaflet para mostrar mapas interactivos. -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
+    <!-- Carga el archivo principal de JavaScript que inicia la aplicación. -->
     <script type="module" src="/src/main.js"></script>
 </head>
 
 <body>
+    <!-- Contenedor donde JavaScript construye y muestra la interfaz de SIGECO-SOG. -->
     <div id="app"></div>
+
+<!-- Ventana flotante para el acceso administrativo. -->
+<div id="admin-modal" class="admin-modal" aria-hidden="true">
+
+    <!-- Fondo oscuro de la ventana. -->
+    <div class="admin-overlay" id="admin-overlay"></div>
+
+    <!-- Panel de inicio de sesión. -->
+    <section
+        class="admin-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="admin-title"
+    >
+        <!-- Encabezado y botón para cerrar. -->
+        <div class="admin-header">
+            <div>
+                <span class="admin-label">SIGECO-SOG</span>
+                <h2 id="admin-title">Acceso administrativo</h2>
+                <p>Área exclusiva de gestión del sistema.</p>
+            </div>
+
+            <button
+                type="button"
+                id="close-admin"
+                class="admin-close"
+                aria-label="Cerrar ventana"
+            >
+                &times;
+            </button>
+        </div>
+
+        <!-- Formulario de inicio de sesión. -->
+        <form id="admin-login-form" class="admin-login-form">
+
+            <label for="admin-email">Correo electrónico</label>
+            <input
+                type="email"
+                id="admin-email"
+                placeholder="Ingresa tu correo"
+                autocomplete="username"
+                required
+            >
+
+            <label for="admin-password">Contraseña</label>
+            <input
+                type="password"
+                id="admin-password"
+                placeholder="Ingresa tu contraseña"
+                autocomplete="current-password"
+                required
+            >
+
+            <button type="submit" id="admin-login-button">
+                Iniciar sesión
+            </button>
+
+            <p id="admin-login-message" aria-live="polite"></p>
+        </form>
+
+        <div class="admin-footer">
+            <span>Acceso restringido a personal autorizado</span>
+        </div>
+    </section>
+</div>
+
+    <!-- Ventana flotante para consultar los detalles de un establecimiento. -->
+    <div id="details-modal" class="details-modal" aria-hidden="true">
+
+        <!-- Fondo oscuro que permite cerrar la ventana al hacer clic fuera. -->
+        <div class="details-overlay" id="details-overlay"></div>
+
+        <!-- Panel flotante que contiene toda la información del establecimiento. -->
+        <section class="details-panel" role="dialog" aria-modal="true" aria-labelledby="details-title">
+
+            <!-- Encabezado con el título y el botón para cerrar. -->
+            <div class="details-header">
+                <div>
+                    <span class="details-label">SIGECO-SOG</span>
+                    <h2 id="details-title">Detalles del establecimiento</h2>
+                </div>
+
+                <button type="button" id="close-details" class="details-close" aria-label="Cerrar detalles">
+                    &times;
+                </button>
+            </div>
+
+            <!-- Espacio donde JavaScript mostrará los datos del establecimiento. -->
+            <div id="details-content" class="details-content"></div>
+
+            <!-- Mapa independiente para mostrar la ubicación del establecimiento. -->
+            <div class="details-map-section">
+                <h3>Ubicación del establecimiento</h3>
+                <div id="details-map"></div>
+            </div>
+
+        </section>
+    </div>
 </body>
+
 </html>

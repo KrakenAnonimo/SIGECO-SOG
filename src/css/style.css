@@ -1,6 +1,8 @@
 
+/* Importa el tipo de letra que utiliza SIGECO-SOG. */
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
 
+/* Configura la fuente y los colores generales de toda la aplicación. */
 :root {
     font-family: 'DM Sans', Arial, sans-serif;
     color: #172c32;
@@ -9,25 +11,30 @@
     text-rendering: optimizeLegibility;
 }
 
+/* Elimina los márgenes y espacios predeterminados de los elementos. */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+/* Hace que el desplazamiento entre las secciones sea suave. */
 html {
     scroll-behavior: smooth;
 }
 
+/* Establece el ancho mínimo de la página. */
 body {
     min-width: 320px;
 }
 
+/* Define el ancho y la alineación de los contenidos principales. */
 .container {
     width: min(1160px, 90%);
     margin: auto;
 }
 
+/* Configura la barra superior de navegación. */
 .header {
     background: #ffffff;
     border-bottom: 1px solid #e9eeee;
@@ -36,6 +43,7 @@ body {
     z-index: 100;
 }
 
+/* Organiza los elementos que aparecen dentro de la barra superior. */
 .header-content {
     min-height: 82px;
     display: flex;
@@ -44,6 +52,7 @@ body {
     gap: 25px;
 }
 
+/* Define la apariencia del nombre y el logotipo del proyecto. */
 .brand {
     display: flex;
     align-items: center;
@@ -52,6 +61,7 @@ body {
     color: #173e43;
 }
 
+/* Da forma y color al recuadro con la letra del logotipo. */
 .brand-icon {
     background: #176b61;
     color: white;
@@ -64,25 +74,30 @@ body {
     font-weight: 800;
 }
 
+/* Organiza el nombre y la descripción pequeña del proyecto. */
 .brand strong,
 .brand small {
     display: block;
 }
 
+/* Define el tamaño del nombre SIGECO-SOG. */
 .brand strong {
     font-size: 17px;
 }
 
+/* Define el tamaño y color del texto debajo del nombre. */
 .brand small {
     font-size: 11px;
     color: #718487;
 }
 
+/* Organiza los enlaces de navegación de la página. */
 .navigation {
     display: flex;
     gap: 27px;
 }
 
+/* Define la apariencia de los enlaces del menú. */
 .navigation a {
     text-decoration: none;
     color: #52666a;
@@ -90,10 +105,12 @@ body {
     font-weight: 600;
 }
 
+/* Cambia el color de los enlaces cuando el usuario pasa el cursor. */
 .navigation a:hover {
     color: #176b61;
 }
 
+/* Define el diseño de los botones principales del encabezado y del buscador. */
 .header-button,
 .search-box button {
     background: #176b61;
@@ -107,15 +124,21 @@ body {
     cursor: pointer;
 }
 
+/* Configura el fondo y los espacios de la sección principal de bienvenida. */
 .hero {
     background: linear-gradient(120deg, #edf5f1, #e4efed);
     padding: 105px 0 100px;
 }
 
+/* Centra y organiza el contenido de la sección principal. */
 .hero-content {
     max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
 }
 
+
+/* Define el estilo de los pequeños textos que identifican cada sección. */
 .eyebrow {
     color: #267b6b;
     font-size: 11px;
@@ -123,59 +146,98 @@ body {
     letter-spacing: 2px;
 }
 
+/* Centra el título principal y mejora su distribución visual. */
 .hero h1 {
     max-width: 800px;
-    margin: 20px 0;
+    margin: 20px auto;
     color: #173e43;
     font-size: clamp(34px, 5vw, 57px);
     line-height: 1.12;
     letter-spacing: -2px;
+    text-align: center;
 }
 
+
+/* Define la apariencia del texto descriptivo de la sección principal. */
+
+/* Centra y mejora la lectura de la descripción de bienvenida. */
 .hero-content > p {
     color: #607477;
     line-height: 1.8;
     font-size: 15px;
     max-width: 650px;
+    margin: 0 auto;
+    text-align: center;
 }
 
+
+/* Da una apariencia moderna y elegante al buscador principal. */
 .search-box {
-    background: white;
+    background: #ffffff;
     max-width: 720px;
     display: flex;
     gap: 10px;
-    padding: 8px;
+    padding: 9px;
     margin-top: 30px;
-    border-radius: 12px;
-    box-shadow: 0 10px 35px #183b3710;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid #e1ebe6;
+    border-radius: 14px;
+    box-shadow: 0 12px 35px rgba(23, 62, 67, 0.09);
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
+/* Resalta el buscador cuando el usuario interactúa con él. */
+.search-box:focus-within {
+    border-color: #5b9d8d;
+    box-shadow: 0 12px 35px rgba(23, 107, 97, 0.15);
+}
+
+/* Mejora la apariencia del campo de escritura del buscador. */
 .search-box input {
     flex: 1;
     min-width: 0;
     border: none;
     outline: none;
-    padding: 13px;
+    padding: 14px 16px;
     font: inherit;
-    font-size: 13px;
+    font-size: 14px;
+    color: #173e43;
+    background: transparent;
 }
 
+/* Define el color del texto de ayuda dentro del buscador. */
+.search-box input::placeholder {
+    color: #9aa9a5;
+}
+
+
+/* Da formato al texto de ayuda que aparece debajo del buscador. */
 .search-hint {
-    margin-top: 13px;
-    font-size: 11px !important;
+      margin-top: 16px;
+    font-size: 12px !important;
+    color: #718487;
+    text-align: center;
+    line-height: 1.6;
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
+/* Define los espacios generales de las secciones de contenido. */
 .section {
     padding-top: 85px;
     padding-bottom: 85px;
 }
 
+/* Organiza los títulos y descripciones de las secciones. */
 .section-heading {
     display: flex;
     justify-content: space-between;
     margin-bottom: 30px;
 }
 
+/* Define la apariencia de los títulos de categorías y del proyecto. */
 .section-heading h2,
 .about-section h2 {
     color: #173e43;
@@ -183,6 +245,7 @@ body {
     margin: 12px 0;
 }
 
+/* Define la apariencia de las descripciones de las secciones. */
 .section-heading p,
 .about-section p {
     color: #738387;
@@ -190,57 +253,86 @@ body {
     line-height: 1.8;
 }
 
+/* Organiza las tarjetas de categorías en cuatro columnas. */
 .category-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 18px;
 }
 
+
+/* Define el diseño moderno de cada tarjeta de categoría. */
 .category-card {
-    background: #ffffff;
-    border: 1px solid #e4ece9;
-    border-radius: 12px;
-    padding: 25px;
-    text-align: left;
+    background: linear-gradient(145deg, #ffffff, #f7faf8);
+    border: 1px solid #e0eae5;
+    border-radius: 15px;
+    padding: 28px 22px;
+    text-align: center;
     min-height: 155px;
     cursor: pointer;
-    transition: .2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
 }
 
+/* Resalta la categoría cuando el usuario pasa el cursor sobre ella. */
 .category-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-5px);
+    background: linear-gradient(145deg, #ffffff, #edf6f2);
     border-color: #5b9d8d;
-    box-shadow: 0 10px 25px #183b3710;
+    box-shadow: 0 12px 28px rgba(23, 107, 97, 0.12);
 }
 
+/* Organiza el icono, el nombre y la descripción de cada categoría. */
 .category-card span,
 .category-card strong,
 .category-card small {
     display: block;
 }
 
+/* Crea una pequeña insignia visual alrededor del icono. */
+.category-card .category-icon {
+    width: 58px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eaf4ef;
+    border-radius: 16px;
+    font-size: 29px;
+    line-height: 1;
+    margin-bottom: 15px;
+}
+
+/* Define la apariencia del número de cada categoría. */
 .category-card span {
     color: #31927d;
     font-size: 12px;
     margin-bottom: 20px;
 }
 
+/* Define el nombre de cada categoría. */
 .category-card strong {
     font-size: 17px;
     color: #173e43;
     margin-bottom: 8px;
 }
 
+/* Define el texto descriptivo de cada categoría. */
 .category-card small {
     color: #819093;
     font-size: 11px;
 }
 
+/* Configura el fondo y los espacios de la sección del mapa. */
 .map-section {
     background: #f4f7f6;
     padding: 80px 0;
 }
 
+/* Define el espacio y la apariencia del contenedor donde se mostrará el mapa. */
 .map-placeholder {
     min-height: 390px;
     border: 1px solid #dbe5e1;
@@ -250,81 +342,593 @@ body {
     place-items: center;
 }
 
+/* Centra el mensaje que aparece dentro del espacio del mapa. */
 .map-message {
     text-align: center;
     padding: 25px;
 }
 
+/* Define el título del mensaje del mapa. */
 .map-message strong {
     color: #24554e;
     font-size: 19px;
 }
 
+/* Define el texto descriptivo que aparece dentro del mapa. */
 .map-message p {
     color: #71827d;
     margin-top: 10px;
     font-size: 13px;
 }
 
+/* Define los espacios de la sección que presenta el proyecto. */
 .about-section {
     padding-top: 90px;
     padding-bottom: 90px;
 }
 
+/* Limita el ancho del texto descriptivo del proyecto. */
 .about-section p {
     max-width: 750px;
 }
 
+/* Configura el fondo y la apariencia del pie de página. */
 .footer {
     background: #173e43;
     color: white;
     padding: 40px 0;
 }
 
+/* Define el texto descriptivo del pie de página. */
 .footer p {
     color: #c5d5d1;
     margin: 10px 0;
     font-size: 13px;
 }
 
+/* Define el texto pequeño del pie de página. */
 .footer small {
     color: #a9c0bb;
     font-size: 11px;
 }
 
+/* Ajusta el diseño para pantallas medianas y tabletas. */
 @media (max-width: 850px) {
+
+    /* Oculta el menú de navegación para liberar espacio. */
     .navigation {
         display: none;
     }
 
+    /* Organiza las categorías en dos columnas. */
     .category-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
+/* Ajusta el diseño para teléfonos y pantallas pequeñas. */
 @media (max-width: 520px) {
+
+    /* Oculta el botón del encabezado en pantallas pequeñas. */
     .header-button {
         display: none;
     }
 
+    /* Reduce los espacios de la sección principal. */
     .hero {
         padding: 70px 0;
     }
 
+    /* Ajusta el espaciado de las letras del título principal. */
     .hero h1 {
         letter-spacing: -1px;
     }
 
+    /* Organiza el buscador en forma vertical. */
     .search-box {
         flex-direction: column;
     }
 
+    /* Organiza las categorías en una sola columna. */
     .category-grid {
         grid-template-columns: 1fr;
     }
 
+    /* Reduce el tamaño de los títulos para adaptarlos al celular. */
     .section-heading h2,
     .about-section h2 {
         font-size: 25px;
+    }
+}
+/* Define la apariencia del botón para localizar un establecimiento en el mapa. */
+.locate-establishment,
+.details-establishment {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    margin-top: 12px;
+    padding: 11px 18px;
+    background: #176b61;
+    color: #ffffff;
+    border: 1px solid #176b61;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+/* Agrega un efecto visual cuando el usuario pasa el cursor sobre el botón. */
+.locate-establishment:hover {
+    background: #124f49;
+    border-color: #124f49;
+    box-shadow: 0 5px 14px #176b6125;
+    transform: translateY(-2px);
+}
+
+/* Muestra una señal visual cuando el botón recibe el foco. */
+.locate-establishment:focus-visible {
+    outline: 3px solid #8ac8b8;
+    outline-offset: 3px;
+}
+
+/* Ajusta el botón para que sea cómodo de utilizar en celulares. */
+@media (max-width: 520px) {
+    .locate-establishment {
+        width: 100%;
+    }
+}
+
+/* Organiza visualmente cada tarjeta de establecimiento. */
+.establishment-card {
+    background: #ffffff;
+    border: 1px solid #e2eae7;
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 16px;
+    box-shadow: 0 3px 12px rgba(25, 65, 55, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Resalta suavemente la tarjeta cuando el usuario pasa el cursor. */
+.establishment-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 20px rgba(25, 65, 55, 0.12);
+}
+
+/* Destaca el nombre del establecimiento. */
+.establishment-card h3 {
+    color: #176b61;
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0 0 12px;
+}
+
+/* Mejora la lectura de la información del establecimiento. */
+.establishment-card p {
+    color: #52645e;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 8px 0;
+}
+
+/* Diferencia las etiquetas de los datos. */
+.establishment-card p strong {
+    color: #263d36;
+    font-weight: 700;
+}
+
+/* Ajusta el espacio del botón de ubicación dentro de la tarjeta. */
+.establishment-card .locate-establishment {
+    margin-top: 14px;
+}
+
+/* Adapta las tarjetas a pantallas pequeñas. */
+@media (max-width: 520px) {
+    .establishment-card {
+        padding: 17px;
+    }
+
+    .establishment-card h3 {
+        font-size: 17px;
+    }
+}
+/* =========================================
+   VENTANA FLOTANTE DE DETALLES
+========================================= */
+
+/* Oculta la ventana mientras no se consulta un establecimiento. */
+.details-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 25px;
+}
+
+/* Muestra la ventana cuando se activa. */
+.details-modal.active {
+    display: flex;
+}
+
+/* Fondo oscuro detrás de la ventana. */
+.details-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 35, 38, 0.68);
+    backdrop-filter: blur(5px);
+}
+
+/* Panel principal de la ventana. */
+.details-panel {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 760px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+    animation: detailsAppear 0.25s ease;
+}
+
+/* Animación de entrada. */
+@keyframes detailsAppear {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Encabezado de la ventana. */
+.details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e5eeea;
+}
+
+/* Identificación del sistema. */
+.details-label {
+    color: #31927d;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+/* Título principal. */
+.details-header h2 {
+    color: #173e43;
+    font-size: 23px;
+    margin: 8px 0 0;
+}
+
+/* Botón para cerrar. */
+.details-close {
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    background: #edf4f0;
+    color: #173e43;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+/* Información del establecimiento. */
+.details-content {
+    padding: 22px 0;
+    color: #607477;
+    line-height: 1.7;
+}
+
+/* Nombre del establecimiento. */
+.details-content h3 {
+    color: #173e43;
+    font-size: 21px;
+    margin: 0 0 12px;
+}
+
+/* Separación de los datos. */
+.details-content p {
+    margin: 9px 0;
+    font-size: 14px;
+}
+
+/* Título del mapa. */
+.details-map-section h3 {
+    color: #173e43;
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+/* Mapa de la ventana de detalles. */
+#details-map {
+    width: 100%;
+    height: 260px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid #e0eae5;
+}
+
+/* Ajustes para celulares. */
+@media (max-width: 600px) {
+    .details-modal {
+        padding: 12px;
+    }
+
+    .details-panel {
+        padding: 20px;
+        max-height: 94vh;
+        border-radius: 16px;
+    }
+
+    .details-header h2 {
+        font-size: 19px;
+    }
+
+    #details-map {
+        height: 220px;
+    }
+}
+
+
+/* =========================================
+   ACCESO DISCRETO DE ADMINISTRACIÓN
+========================================= */
+
+.admin-access {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    color: #8ab9aa;
+    text-decoration: none;
+    font-size: 19px;
+    opacity: 0.75;
+    transition: all 0.25s ease;
+}
+
+.admin-access:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.10);
+    border-color: #8ab9aa;
+    color: #8ab9aa;
+}
+
+.admin-access:focus-visible {
+    outline: 2px solid #8ab9aa;
+    outline-offset: 3px;
+}
+
+/* =========================================
+   VENTANA DE ACCESO ADMINISTRATIVO
+========================================= */
+
+.admin-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 11000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.admin-modal.active {
+    display: flex;
+}
+
+.admin-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 35, 38, 0.72);
+    backdrop-filter: blur(5px);
+}
+
+.admin-panel {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 440px;
+    padding: 32px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+    animation: adminAppear 0.25s ease;
+}
+
+@keyframes adminAppear {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid #e5eeea;
+}
+
+.admin-label {
+    color: #31927d;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.admin-header h2 {
+    color: #173e43;
+    font-size: 22px;
+    margin: 9px 0;
+}
+
+.admin-header p {
+    color: #718184;
+    font-size: 13px;
+    margin: 0;
+}
+
+.admin-close {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 50%;
+    background: #edf4f0;
+    color: #173e43;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.admin-login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 24px 0;
+}
+
+.admin-login-form label {
+    color: #173e43;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.admin-login-form input {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #dce7e2;
+    border-radius: 9px;
+    background: #f9fbfa;
+    color: #173e43;
+    font-size: 14px;
+    outline: none;
+}
+
+.admin-login-form input:focus {
+    border-color: #31927d;
+    box-shadow: 0 0 0 3px rgba(49, 146, 125, 0.12);
+}
+
+.admin-login-form button {
+    margin-top: 12px;
+    padding: 14px;
+    border: none;
+    border-radius: 9px;
+    background: #176b61;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.admin-login-form button:hover {
+    background: #12564f;
+}
+
+#admin-login-message {
+    min-height: 18px;
+    margin: 4px 0 0;
+    font-size: 12px;
+    text-align: center;
+}
+
+.admin-footer {
+    padding-top: 16px;
+    border-top: 1px solid #e5eeea;
+    color: #849391;
+    font-size: 11px;
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .admin-panel {
+        padding: 23px;
+        border-radius: 16px;
+    }
+
+    .admin-header h2 {
+        font-size: 19px;
+    }
+}
+/* Notificaciones del acceso administrativo */
+.admin-login-message {
+    display: none;
+    padding: 13px 16px;
+    margin-top: 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+    animation: notificationAppear 0.25s ease;
+}
+
+/* Acceso autorizado: verde */
+.admin-login-message.success {
+    display: block;
+    color: #166534;
+    background: #dcfce7;
+    border: 1px solid #86efac;
+}
+
+/* Credenciales incorrectas: amarillo */
+.admin-login-message.warning {
+    display: block;
+    color: #854d0e;
+    background: #fef9c3;
+    border: 1px solid #fde047;
+}
+
+/* Acceso denegado: rojo */
+.admin-login-message.error {
+    display: block;
+    color: #991b1b;
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+}
+
+/* Verificando acceso */
+.admin-login-message.loading {
+    display: block;
+    color: #1e40af;
+    background: #dbeafe;
+    border: 1px solid #93c5fd;
+}
+
+@keyframes notificationAppear {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

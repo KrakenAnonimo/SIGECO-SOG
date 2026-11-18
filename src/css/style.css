@@ -420,6 +420,7 @@ body {
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   margin: 0;
   color: #72868a;
   font-size: 12px;

@@ -1,934 +1,2518 @@
-
-/* Importa el tipo de letra que utiliza SIGECO-SOG. */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
-
-/* Configura la fuente y los colores generales de toda la aplicación. */
+/* =========================================================
+   SIGECO-SOG
+   HOJA DE ESTILOS PRINCIPAL
+   ========================================================= */
+/* FUENTE Y CONFIGURACIÓN GENERAL */
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap");
 :root {
-    font-family: 'DM Sans', Arial, sans-serif;
-    color: #172c32;
-    background: #ffffff;
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
+  font-family: "DM Sans", Arial, sans-serif;
+  color: #172c32;
+  background: #ffffff;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
 }
-
-/* Elimina los márgenes y espacios predeterminados de los elementos. */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-
-/* Hace que el desplazamiento entre las secciones sea suave. */
 html {
-    scroll-behavior: smooth;
+  scroll-behavior: smooth;
 }
-
-/* Establece el ancho mínimo de la página. */
 body {
-    min-width: 320px;
+  min-width: 320px;
 }
-
-/* Define el ancho y la alineación de los contenidos principales. */
 .container {
-    width: min(1160px, 90%);
-    margin: auto;
+  width: min(1160px, 90%);
+  margin: auto;
 }
-
-/* Configura la barra superior de navegación. */
+/* =========================================================
+   ENCABEZADO Y NAVEGACIÓN
+   ========================================================= */
 .header {
-    background: #ffffff;
-    border-bottom: 1px solid #e9eeee;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #ffffff;
+  border-bottom: 1px solid #e9eeee;
 }
-
-/* Organiza los elementos que aparecen dentro de la barra superior. */
 .header-content {
-    min-height: 82px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 25px;
+  min-height: 82px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
 }
-
-/* Define la apariencia del nombre y el logotipo del proyecto. */
 .brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    color: #173e43;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #173e43;
+  text-decoration: none;
 }
 
-/* Da forma y color al recuadro con la letra del logotipo. */
 .brand-icon {
-    background: #176b61;
-    color: white;
-    width: 43px;
-    height: 43px;
-    display: grid;
-    place-items: center;
-    border-radius: 12px;
-    font-size: 23px;
-    font-weight: 800;
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  overflow: hidden;
+  background: transparent;
 }
 
-/* Organiza el nombre y la descripción pequeña del proyecto. */
+.brand-icon img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
 .brand strong,
 .brand small {
-    display: block;
+  display: block;
 }
-
-/* Define el tamaño del nombre SIGECO-SOG. */
 .brand strong {
-    font-size: 17px;
+  font-size: 17px;
 }
-
-/* Define el tamaño y color del texto debajo del nombre. */
 .brand small {
-    font-size: 11px;
-    color: #718487;
+  color: #718487;
+  font-size: 11px;
 }
 
-/* Organiza los enlaces de navegación de la página. */
 .navigation {
-    display: flex;
-    gap: 27px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-/* Define la apariencia de los enlaces del menú. */
 .navigation a {
-    text-decoration: none;
-    color: #52666a;
-    font-size: 13px;
-    font-weight: 600;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 18px;
+  border-radius: 50px;
+  color: #52666a;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  isolation: isolate;
+  transition:
+    color 0.35s ease,
+    transform 0.35s ease;
 }
 
-/* Cambia el color de los enlaces cuando el usuario pasa el cursor. */
+.navigation a::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 1px solid rgba(37, 145, 100, 0.25);
+  border-radius: inherit;
+  background: linear-gradient(135deg, #e6f8ee, #b8e8d0);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.9),
+    0 8px 22px rgba(24, 110, 75, 0.14);
+  opacity: 0;
+  transform: scale(0.5);
+  transition:
+    opacity 0.35s ease,
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .navigation a:hover {
-    color: #176b61;
+  color: #105c42;
+  transform: translateY(-2px);
 }
 
-/* Define el diseño de los botones principales del encabezado y del buscador. */
+.navigation a:hover::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.navigation a:focus-visible {
+  outline: 2px solid #218965;
+  outline-offset: 3px;
+}
+
 .header-button,
 .search-box button {
-    background: #176b61;
-    color: white;
-    border: 0;
-    border-radius: 8px;
-    padding: 13px 19px;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
+  padding: 13px 19px;
+  border: 0;
+  border-radius: 8px;
+  background: #176b61;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
 }
-
-/* Configura el fondo y los espacios de la sección principal de bienvenida. */
+.header-button:hover,
+.search-box button:hover {
+  background: #12564f;
+}
+/* =========================================================
+   SECCIÓN PRINCIPAL
+   ========================================================= */
 .hero {
-    background: linear-gradient(120deg, #edf5f1, #e4efed);
-    padding: 105px 0 100px;
+  padding: 105px 0 100px;
+  background: linear-gradient(120deg, #edf5f1, #e4efed);
 }
-
-/* Centra y organiza el contenido de la sección principal. */
 .hero-content {
-    max-width: 900px;
-    margin: 0 auto;
-    text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
 }
-
-
-/* Define el estilo de los pequeños textos que identifican cada sección. */
 .eyebrow {
-    color: #267b6b;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 2px;
+  color: #267b6b;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
 }
-
-/* Centra el título principal y mejora su distribución visual. */
 .hero h1 {
-    max-width: 800px;
-    margin: 20px auto;
-    color: #173e43;
-    font-size: clamp(34px, 5vw, 57px);
-    line-height: 1.12;
-    letter-spacing: -2px;
-    text-align: center;
+  max-width: 800px;
+  margin: 20px auto;
+  color: #173e43;
+  font-size: clamp(34px, 5vw, 57px);
+  line-height: 1.12;
+  letter-spacing: -2px;
+  text-align: center;
 }
-
-
-/* Define la apariencia del texto descriptivo de la sección principal. */
-
-/* Centra y mejora la lectura de la descripción de bienvenida. */
 .hero-content > p {
-    color: #607477;
-    line-height: 1.8;
-    font-size: 15px;
-    max-width: 650px;
-    margin: 0 auto;
-    text-align: center;
+  max-width: 650px;
+  margin: 0 auto;
+  color: #607477;
+  font-size: 15px;
+  line-height: 1.8;
+  text-align: center;
 }
-
-
-/* Da una apariencia moderna y elegante al buscador principal. */
+/* =========================================================
+   BUSCADOR
+   ========================================================= */
 .search-box {
-    background: #ffffff;
-    max-width: 720px;
-    display: flex;
-    gap: 10px;
-    padding: 9px;
-    margin-top: 30px;
-    margin-left: auto;
-    margin-right: auto;
-    border: 1px solid #e1ebe6;
-    border-radius: 14px;
-    box-shadow: 0 12px 35px rgba(23, 62, 67, 0.09);
-    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+  max-width: 720px;
+  display: flex;
+  gap: 10px;
+  margin: 30px auto 0;
+  padding: 9px;
+  border: 1px solid #e1ebe6;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 12px 35px rgba(23, 62, 67, 0.09);
+  transition:
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
 }
-
-/* Resalta el buscador cuando el usuario interactúa con él. */
 .search-box:focus-within {
-    border-color: #5b9d8d;
-    box-shadow: 0 12px 35px rgba(23, 107, 97, 0.15);
+  border-color: #5b9d8d;
+  box-shadow: 0 12px 35px rgba(23, 107, 97, 0.15);
 }
-
-/* Mejora la apariencia del campo de escritura del buscador. */
 .search-box input {
-    flex: 1;
-    min-width: 0;
-    border: none;
-    outline: none;
-    padding: 14px 16px;
-    font: inherit;
-    font-size: 14px;
-    color: #173e43;
-    background: transparent;
+  flex: 1;
+  min-width: 0;
+  padding: 14px 16px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #173e43;
+  font: inherit;
+  font-size: 14px;
 }
-
-/* Define el color del texto de ayuda dentro del buscador. */
 .search-box input::placeholder {
-    color: #9aa9a5;
+  color: #9aa9a5;
 }
-
-
-/* Da formato al texto de ayuda que aparece debajo del buscador. */
 .search-hint {
-      margin-top: 16px;
-    font-size: 12px !important;
-    color: #718487;
-    text-align: center;
-    line-height: 1.6;
-    max-width: 720px;
-    margin-left: auto;
-    margin-right: auto;
+  max-width: 720px;
+  margin: 16px auto 0;
+  color: #718487;
+  font-size: 12px !important;
+  line-height: 1.6;
+  text-align: center;
 }
-
-/* Define los espacios generales de las secciones de contenido. */
+/* =========================================================
+   SECCIONES GENERALES
+   ========================================================= */
 .section {
-    padding-top: 85px;
-    padding-bottom: 85px;
+  padding: 85px 0;
 }
-
-/* Organiza los títulos y descripciones de las secciones. */
 .section-heading {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
 }
-
-/* Define la apariencia de los títulos de categorías y del proyecto. */
 .section-heading h2,
 .about-section h2 {
-    color: #173e43;
-    font-size: 30px;
-    margin: 12px 0;
+  margin: 12px 0;
+  color: #173e43;
+  font-size: 30px;
 }
-
-/* Define la apariencia de las descripciones de las secciones. */
 .section-heading p,
 .about-section p {
-    color: #738387;
-    font-size: 14px;
-    line-height: 1.8;
+  color: #738387;
+  font-size: 14px;
+  line-height: 1.8;
 }
-
-/* Organiza las tarjetas de categorías en cuatro columnas. */
-.category-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
+/* =========================================================
+   CATEGORÍAS — CARRUSEL 3D SIGECO-SOG
+   Estilos aislados: no afectan el carrusel de fotografías
+   ========================================================= */
+#category-grid.category-grid {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
-
-
-/* Define el diseño moderno de cada tarjeta de categoría. */
-.category-card {
-    background: linear-gradient(145deg, #ffffff, #f7faf8);
-    border: 1px solid #e0eae5;
-    border-radius: 15px;
-    padding: 28px 22px;
-    text-align: center;
-    min-height: 155px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+#category-grid .sigeco-category-carousel {
+  width: 100%;
+  padding: 26px 0 18px;
+  overflow: hidden;
 }
-
-/* Resalta la categoría cuando el usuario pasa el cursor sobre ella. */
-.category-card:hover {
-    transform: translateY(-5px);
-    background: linear-gradient(145deg, #ffffff, #edf6f2);
-    border-color: #5b9d8d;
-    box-shadow: 0 12px 28px rgba(23, 107, 97, 0.12);
+#category-grid .sigeco-carousel-heading {
+  margin-bottom: 24px;
+  text-align: center;
 }
-
-/* Organiza el icono, el nombre y la descripción de cada categoría. */
-.category-card span,
-.category-card strong,
-.category-card small {
-    display: block;
+#category-grid .sigeco-carousel-eyebrow {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #16816a;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 3px;
 }
-
-/* Crea una pequeña insignia visual alrededor del icono. */
-.category-card .category-icon {
-    width: 58px;
-    height: 58px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #eaf4ef;
-    border-radius: 16px;
-    font-size: 29px;
-    line-height: 1;
-    margin-bottom: 15px;
+#category-grid .sigeco-carousel-heading p {
+  margin: 0;
+  color: #71858a;
+  font-size: 14px;
+  line-height: 1.7;
 }
-
-/* Define la apariencia del número de cada categoría. */
-.category-card span {
-    color: #31927d;
-    font-size: 12px;
-    margin-bottom: 20px;
+#category-grid .sigeco-carousel-viewport {
+  position: relative;
+  height: 380px;
+  overflow: hidden;
+  perspective: 1300px;
+  perspective-origin: center;
+  touch-action: pan-y;
 }
-
-/* Define el nombre de cada categoría. */
-.category-card strong {
-    font-size: 17px;
-    color: #173e43;
-    margin-bottom: 8px;
+#category-grid .sigeco-carousel-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
 }
-
-/* Define el texto descriptivo de cada categoría. */
-.category-card small {
-    color: #819093;
-    font-size: 11px;
+#category-grid .category-card.sigeco-carousel-card {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 300px;
+  height: 330px;
+  min-height: 0;
+  margin: 0;
+  padding: 25px;
+  overflow: hidden;
+  border: 1px solid #dcebe5;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #ffffff, #f6faf8);
+  color: #123e3b;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 12px 35px rgba(20, 70, 60, 0.08);
+  transform: translateX(calc(-50% + var(--card-position) * 245px))
+    translateZ(calc(var(--card-depth) * 1px)) rotateY(var(--card-rotation));
+  transition:
+    transform 850ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 700ms ease,
+    box-shadow 450ms ease,
+    border-color 450ms ease;
+  backface-visibility: hidden;
 }
-
-/* Configura el fondo y los espacios de la sección del mapa. */
-.map-section {
-    background: #f4f7f6;
-    padding: 80px 0;
+#category-grid .category-card.sigeco-carousel-card:hover {
+  background: linear-gradient(145deg, #ffffff, #f6faf8);
+  transform: translateX(calc(-50% + var(--card-position) * 245px))
+    translateZ(calc(var(--card-depth) * 1px)) rotateY(var(--card-rotation));
 }
-
-/* Define el espacio y la apariencia del contenedor donde se mostrará el mapa. */
-.map-placeholder {
-    min-height: 390px;
-    border: 1px solid #dbe5e1;
-    background: #e5ece8;
-    border-radius: 14px;
-    display: grid;
-    place-items: center;
+#category-grid .sigeco-carousel-card.is-active {
+  z-index: 10;
+  border-color: #a9d8c5;
+  box-shadow: 0 24px 65px rgba(16, 89, 69, 0.16);
 }
-
-/* Centra el mensaje que aparece dentro del espacio del mapa. */
-.map-message {
-    text-align: center;
-    padding: 25px;
+#category-grid .sigeco-carousel-card.is-neighbor {
+  z-index: 5;
 }
-
-/* Define el título del mensaje del mapa. */
-.map-message strong {
-    color: #24554e;
+#category-grid .sigeco-carousel-card.is-hidden {
+  visibility: hidden;
+}
+#category-grid .sigeco-card-decoration {
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 210px;
+  height: 210px;
+  margin: 0;
+  border-radius: 50%;
+  background: var(--category-accent);
+  opacity: 0.075;
+  pointer-events: none;
+}
+#category-grid .sigeco-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 0 0 22px;
+}
+#category-grid .sigeco-card-label {
+  margin: 0;
+  color: #7a9a91;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+#category-grid .sigeco-card-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  border-radius: 50%;
+  background: #eaf4ef;
+  color: #176b53;
+  font-size: 19px;
+  transition: transform 0.3s ease;
+}
+#category-grid .sigeco-carousel-card.is-active:hover .sigeco-card-arrow {
+  transform: rotate(45deg);
+}
+#category-grid .sigeco-carousel-card .category-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 78px;
+  height: 78px;
+  flex: 0 0 78px;
+  margin: 0 0 22px;
+  border-radius: 21px;
+  background: color-mix(in srgb, var(--category-accent) 12%, white);
+  font-size: 37px;
+  line-height: 1;
+  transition: transform 500ms ease;
+}
+#category-grid .sigeco-carousel-card.is-active:hover .category-icon {
+  transform: translateY(-5px) rotate(-5deg) scale(1.06);
+}
+#category-grid .sigeco-carousel-card strong {
+  display: block;
+  margin: 0 0 10px;
+  color: #123e3b;
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+#category-grid .sigeco-carousel-card small {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  margin: 0;
+  color: #72868a;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: left;
+}
+#category-grid .sigeco-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: auto 0 0;
+  padding-top: 14px;
+  border-top: 1px solid #e5eeea;
+  color: #16735d;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+#category-grid .sigeco-card-footer span {
+  margin: 0;
+  color: inherit;
+  font-size: 19px;
+  transition: transform 250ms ease;
+}
+#category-grid .sigeco-carousel-card.is-active:hover .sigeco-card-footer span {
+  transform: translateX(5px);
+}
+#category-grid .sigeco-carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 12px;
+}
+#category-grid .sigeco-carousel-arrow {
+  position: static;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 45px;
+  height: 45px;
+  padding: 0;
+  border: 1px solid #d8e9e1;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #176b53;
+  font-size: 29px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: none;
+  transform: none;
+  transition:
+    background 250ms ease,
+    color 250ms ease,
+    transform 250ms ease,
+    box-shadow 250ms ease;
+}
+#category-grid .sigeco-carousel-arrow:hover {
+  background: #176b53;
+  color: #ffffff;
+  border-color: #176b53;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(23, 107, 83, 0.2);
+}
+#category-grid .sigeco-carousel-counter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #8ba19b;
+  font-size: 13px;
+  font-weight: 700;
+}
+#category-grid .sigeco-carousel-current {
+  color: #176b53;
+  font-size: 22px;
+  font-weight: 800;
+}
+#category-grid .sigeco-carousel-separator {
+  color: #b7c9c2;
+}
+#category-grid .sigeco-carousel-progress {
+  width: 180px;
+  height: 3px;
+  margin: 20px auto 0;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #e4eee9;
+}
+#category-grid .sigeco-carousel-progress-bar {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #1a8d6c, #8bd5b0);
+  transition: width 600ms ease;
+}
+#category-grid .sigeco-carousel-hint {
+  margin: 13px 0 0;
+  color: #9aaca6;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+  text-align: center;
+}
+@media (max-width: 700px) {
+  #category-grid .sigeco-category-carousel {
+    padding-top: 15px;
+  }
+  #category-grid .sigeco-carousel-heading {
+    padding: 0 16px;
+  }
+  #category-grid .sigeco-carousel-viewport {
+    height: 365px;
+  }
+  #category-grid .category-card.sigeco-carousel-card {
+    width: min(275px, 78vw);
+    height: 320px;
+    transform: translateX(calc(-50% + var(--card-position) * 72vw))
+      translateZ(calc(var(--card-depth) * 1px)) rotateY(var(--card-rotation));
+  }
+  #category-grid .category-card.sigeco-carousel-card:hover {
+    transform: translateX(calc(-50% + var(--card-position) * 72vw))
+      translateZ(calc(var(--card-depth) * 1px)) rotateY(var(--card-rotation));
+  }
+  #category-grid .sigeco-carousel-card strong {
     font-size: 19px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #category-grid .sigeco-carousel-card,
+  #category-grid .sigeco-carousel-card .category-icon,
+  #category-grid .sigeco-carousel-arrow,
+  #category-grid .sigeco-carousel-progress-bar {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
-/* Define el texto descriptivo que aparece dentro del mapa. */
+/* =========================================================
+   MAPA GENERAL
+   ========================================================= */
+.map-section {
+  padding: 80px 0;
+  background: #f4f7f6;
+}
+.map-placeholder {
+  min-height: 390px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #dbe5e1;
+  border-radius: 14px;
+  background: #e5ece8;
+}
+.map-message {
+  padding: 25px;
+  text-align: center;
+}
+.map-message strong {
+  color: #24554e;
+  font-size: 19px;
+}
 .map-message p {
-    color: #71827d;
-    margin-top: 10px;
-    font-size: 13px;
+  margin-top: 10px;
+  color: #71827d;
+  font-size: 13px;
 }
-
-/* Define los espacios de la sección que presenta el proyecto. */
-.about-section {
-    padding-top: 90px;
-    padding-bottom: 90px;
+/* =========================================================
+   ESTABLECIMIENTOS
+   ========================================================= */
+.establishment-card {
+  margin-bottom: 16px;
+  padding: 22px;
+  border: 1px solid #e2eae7;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 3px 12px rgba(25, 65, 55, 0.06);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
-
-/* Limita el ancho del texto descriptivo del proyecto. */
-.about-section p {
-    max-width: 750px;
+.establishment-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 20px rgba(25, 65, 55, 0.12);
 }
-
-/* Configura el fondo y la apariencia del pie de página. */
-.footer {
-    background: #173e43;
-    color: white;
-    padding: 40px 0;
+.establishment-card h3 {
+  margin-bottom: 12px;
+  color: #176b61;
+  font-size: 19px;
+  font-weight: 700;
 }
-
-/* Define el texto descriptivo del pie de página. */
-.footer p {
-    color: #c5d5d1;
-    margin: 10px 0;
-    font-size: 13px;
+.establishment-card p {
+  margin: 8px 0;
+  color: #52645e;
+  font-size: 14px;
+  line-height: 1.6;
 }
-
-/* Define el texto pequeño del pie de página. */
-.footer small {
-    color: #a9c0bb;
-    font-size: 11px;
+.establishment-card p strong {
+  color: #263d36;
+  font-weight: 700;
 }
-
-/* Ajusta el diseño para pantallas medianas y tabletas. */
-@media (max-width: 850px) {
-
-    /* Oculta el menú de navegación para liberar espacio. */
-    .navigation {
-        display: none;
-    }
-
-    /* Organiza las categorías en dos columnas. */
-    .category-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-/* Ajusta el diseño para teléfonos y pantallas pequeñas. */
-@media (max-width: 520px) {
-
-    /* Oculta el botón del encabezado en pantallas pequeñas. */
-    .header-button {
-        display: none;
-    }
-
-    /* Reduce los espacios de la sección principal. */
-    .hero {
-        padding: 70px 0;
-    }
-
-    /* Ajusta el espaciado de las letras del título principal. */
-    .hero h1 {
-        letter-spacing: -1px;
-    }
-
-    /* Organiza el buscador en forma vertical. */
-    .search-box {
-        flex-direction: column;
-    }
-
-    /* Organiza las categorías en una sola columna. */
-    .category-grid {
-        grid-template-columns: 1fr;
-    }
-
-    /* Reduce el tamaño de los títulos para adaptarlos al celular. */
-    .section-heading h2,
-    .about-section h2 {
-        font-size: 25px;
-    }
-}
-/* Define la apariencia del botón para localizar un establecimiento en el mapa. */
 .locate-establishment,
 .details-establishment {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 9px;
-    margin-top: 12px;
-    padding: 11px 18px;
-    background: #176b61;
-    color: #ffffff;
-    border: 1px solid #176b61;
-    border-radius: 8px;
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 11px 18px;
+  border: 1px solid #176b61;
+  border-radius: 8px;
+  background: #176b61;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
 }
-
-/* Agrega un efecto visual cuando el usuario pasa el cursor sobre el botón. */
-.locate-establishment:hover {
-    background: #124f49;
-    border-color: #124f49;
-    box-shadow: 0 5px 14px #176b6125;
-    transform: translateY(-2px);
+.locate-establishment:hover,
+.details-establishment:hover {
+  transform: translateY(-2px);
+  border-color: #124f49;
+  background: #124f49;
+  box-shadow: 0 5px 14px #176b6125;
 }
-
-/* Muestra una señal visual cuando el botón recibe el foco. */
-.locate-establishment:focus-visible {
-    outline: 3px solid #8ac8b8;
-    outline-offset: 3px;
+.locate-establishment:focus-visible,
+.details-establishment:focus-visible {
+  outline: 3px solid #8ac8b8;
+  outline-offset: 3px;
 }
-
-/* Ajusta el botón para que sea cómodo de utilizar en celulares. */
-@media (max-width: 520px) {
-    .locate-establishment {
-        width: 100%;
-    }
+/* =========================================================
+   PIE DE PÁGINA
+   ========================================================= */
+.about-section {
+  padding: 90px 0;
 }
-
-/* Organiza visualmente cada tarjeta de establecimiento. */
-.establishment-card {
-    background: #ffffff;
-    border: 1px solid #e2eae7;
-    border-radius: 12px;
-    padding: 22px;
-    margin-bottom: 16px;
-    box-shadow: 0 3px 12px rgba(25, 65, 55, 0.06);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+.about-section p {
+  max-width: 750px;
 }
-
-/* Resalta suavemente la tarjeta cuando el usuario pasa el cursor. */
-.establishment-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 7px 20px rgba(25, 65, 55, 0.12);
+.footer {
+  padding: 40px 0;
+  background: #173e43;
+  color: #ffffff;
 }
-
-/* Destaca el nombre del establecimiento. */
-.establishment-card h3 {
-    color: #176b61;
-    font-size: 19px;
-    font-weight: 700;
-    margin: 0 0 12px;
+.footer p {
+  margin: 10px 0;
+  color: #c5d5d1;
+  font-size: 13px;
 }
-
-/* Mejora la lectura de la información del establecimiento. */
-.establishment-card p {
-    color: #52645e;
-    font-size: 14px;
-    line-height: 1.6;
-    margin: 8px 0;
+.footer small {
+  color: #a9c0bb;
+  font-size: 11px;
 }
-
-/* Diferencia las etiquetas de los datos. */
-.establishment-card p strong {
-    color: #263d36;
-    font-weight: 700;
-}
-
-/* Ajusta el espacio del botón de ubicación dentro de la tarjeta. */
-.establishment-card .locate-establishment {
-    margin-top: 14px;
-}
-
-/* Adapta las tarjetas a pantallas pequeñas. */
-@media (max-width: 520px) {
-    .establishment-card {
-        padding: 17px;
-    }
-
-    .establishment-card h3 {
-        font-size: 17px;
-    }
-}
-/* =========================================
-   VENTANA FLOTANTE DE DETALLES
-========================================= */
-
-/* Oculta la ventana mientras no se consulta un establecimiento. */
+/* =========================================================
+   VENTANA DE DETALLES DEL ESTABLECIMIENTO
+   ========================================================= */
 .details-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 10000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 25px;
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
-
-/* Muestra la ventana cuando se activa. */
 .details-modal.active {
-    display: flex;
+  display: flex;
 }
-
-/* Fondo oscuro detrás de la ventana. */
 .details-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(15, 35, 38, 0.68);
-    backdrop-filter: blur(5px);
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 35, 38, 0.68);
+  backdrop-filter: blur(5px);
 }
-
-/* Panel principal de la ventana. */
 .details-panel {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 760px;
-    max-height: 90vh;
-    overflow-y: auto;
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
-    animation: detailsAppear 0.25s ease;
+  position: relative;
+  z-index: 1;
+  width: min(96vw, 1000px);
+  max-width: 1000px;
+  max-height: 94vh;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid #e6eee9;
+  border-radius: 25px;
+  background: #ffffff;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+  animation: detailsAppear 0.25s ease;
 }
-
-/* Animación de entrada. */
 @keyframes detailsAppear {
-    from {
-        opacity: 0;
-        transform: translateY(20px) scale(0.98);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-/* Encabezado de la ventana. */
-.details-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 15px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #e5eeea;
-}
-
-/* Identificación del sistema. */
-.details-label {
-    color: #31927d;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 2px;
-}
-
-/* Título principal. */
-.details-header h2 {
-    color: #173e43;
-    font-size: 23px;
-    margin: 8px 0 0;
-}
-
-/* Botón para cerrar. */
-.details-close {
-    width: 38px;
-    height: 38px;
-    border: none;
-    border-radius: 50%;
-    background: #edf4f0;
-    color: #173e43;
-    font-size: 25px;
-    cursor: pointer;
-}
-
-/* Información del establecimiento. */
-.details-content {
-    padding: 22px 0;
-    color: #607477;
-    line-height: 1.7;
-}
-
-/* Nombre del establecimiento. */
-.details-content h3 {
-    color: #173e43;
-    font-size: 21px;
-    margin: 0 0 12px;
-}
-
-/* Separación de los datos. */
-.details-content p {
-    margin: 9px 0;
-    font-size: 14px;
-}
-
-/* Título del mapa. */
-.details-map-section h3 {
-    color: #173e43;
-    font-size: 16px;
-    margin-bottom: 12px;
-}
-
-/* Mapa de la ventana de detalles. */
-#details-map {
-    width: 100%;
-    height: 260px;
-    border-radius: 14px;
-    overflow: hidden;
-    border: 1px solid #e0eae5;
-}
-
-/* Ajustes para celulares. */
-@media (max-width: 600px) {
-    .details-modal {
-        padding: 12px;
-    }
-
-    .details-panel {
-        padding: 20px;
-        max-height: 94vh;
-        border-radius: 16px;
-    }
-
-    .details-header h2 {
-        font-size: 19px;
-    }
-
-    #details-map {
-        height: 220px;
-    }
-}
-
-
-/* =========================================
-   ACCESO DISCRETO DE ADMINISTRACIÓN
-========================================= */
-
-.admin-access {
-    width: 36px;
-    height: 36px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 50%;
-    color: #8ab9aa;
-    text-decoration: none;
-    font-size: 19px;
-    opacity: 0.75;
-    transition: all 0.25s ease;
-}
-
-.admin-access:hover {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
     opacity: 1;
-    background: rgba(255, 255, 255, 0.10);
-    border-color: #8ab9aa;
-    color: #8ab9aa;
+    transform: translateY(0) scale(1);
+  }
 }
-
+/* ENCABEZADO Y BOTÓN DE CIERRE */
+.details-header {
+  position: absolute;
+  top: 12px;
+  right: 15px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 15px;
+  padding: 0;
+  border: 0;
+}
+.details-header h2 {
+  display: none;
+}
+.details-label {
+  color: #31927d;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+.details-close {
+  width: 39px;
+  height: 39px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #e2ece7;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  color: #173e43;
+  font-size: 25px;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+.details-close:hover {
+  transform: rotate(90deg);
+  background: #eaf4ef;
+}
+.details-content {
+  margin: 0;
+  padding: 0;
+  color: #173d40;
+  line-height: normal;
+}
+/* =========================================================
+   IDENTIDAD VISUAL DE LA FICHA SIGECO
+   ========================================================= */
+.sigeco-detail-page {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+/* ENCABEZADO PANORÁMICO CON ILUSTRACIÓN DE SOGAMOSO */
+.sigeco-detail-heading {
+  position: relative;
+  isolation: isolate;
+  min-height: 255px;
+  overflow: hidden;
+  padding: 20px 45px 25px;
+  background: linear-gradient(to bottom, #e6f4f1 0%, #eaf5f2 72%, #f5faf8 100%);
+  text-align: center;
+}
+.sigeco-detail-heading::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("/images/imgdtl.png");
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 100% auto;
+  opacity: 0.3;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    rgba(0, 0, 0, 0.9) 55%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    rgba(0, 0, 0, 0.9) 85%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+/* DESACTIVAR LAS ANTIGUAS DECORACIONES */
+.sigeco-heading-landscape,
+.sigeco-heading-mountains,
+.sigeco-heading-town {
+  display: none;
+}
+.sigeco-brand-pill {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 20px;
+  border-radius: 30px;
+  background: rgba(190, 235, 222, 0.85);
+  color: #07554e;
+  font-size: 15px;
+  font-weight: 800;
+}
+.sigeco-brand-pill span {
+  font-size: 18px;
+}
+.sigeco-detail-heading h2 {
+  position: relative;
+  z-index: 1;
+  margin: 10px 0 7px;
+  color: #123f43;
+  font-size: clamp(25px, 4vw, 39px);
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -1.2px;
+}
+.sigeco-establishment-description {
+  position: relative;
+  z-index: 1;
+  max-width: 700px;
+  margin: 9px auto 13px;
+  color: #596b7b;
+  font-size: 17px;
+  font-style: italic;
+  line-height: 1.5;
+}
+.sigeco-category-divider {
+  position: relative;
+  z-index: 1;
+  max-width: 530px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 12px auto 0;
+}
+.sigeco-category-divider > span {
+  flex: 1;
+  height: 1px;
+  background: #7ebbb0;
+}
+.sigeco-category-divider div {
+  padding: 10px 24px;
+  border-radius: 30px;
+  background: #087765;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(0, 90, 75, 0.15);
+}
+/* =========================================================
+   CARRUSEL DE IMÁGENES
+   ========================================================= */
+.sigeco-main-carousel {
+  position: relative;
+  height: 235px;
+  overflow: hidden;
+  margin: 22px 23px 30px;
+  border: 1px solid #e5e9ed;
+  border-radius: 21px;
+  background: #edf2f2;
+  box-shadow: 0 6px 19px rgba(22, 54, 67, 0.09);
+}
+.sigeco-carousel-track {
+  position: relative;
+  height: 100%;
+}
+.sigeco-slide {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+.sigeco-slide.active {
+  display: block;
+}
+.sigeco-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sigeco-carousel-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  width: 43px;
+  height: 43px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  color: #163c40;
+  font-size: 34px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+  transform: translateY(-50%);
+  transition: 0.2s;
+}
+.sigeco-carousel-arrow:hover {
+  background: #b9eddf;
+  transform: translateY(-50%) scale(1.06);
+}
+.sigeco-carousel-arrow.prev {
+  left: 15px;
+}
+.sigeco-carousel-arrow.next {
+  right: 15px;
+}
+.sigeco-carousel-indicators {
+  position: absolute;
+  right: 0;
+  bottom: 12px;
+  left: 0;
+  z-index: 4;
+  display: flex;
+  justify-content: center;
+  gap: 9px;
+}
+.sigeco-indicator {
+  width: 11px;
+  height: 11px;
+  padding: 0;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.sigeco-indicator.active {
+  background: #ffffff;
+}
+.sigeco-no-image {
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 20px;
+  background: linear-gradient(135deg, #edf8f5, #e8f0f6);
+  color: #245d58;
+  text-align: center;
+}
+.sigeco-no-image-icon {
+  font-size: 68px;
+}
+.sigeco-no-image strong {
+  font-size: 18px;
+}
+.sigeco-no-image span {
+  max-width: 350px;
+  color: #647b7c;
+  font-size: 13px;
+}
+/* =========================================================
+   SECCIONES DE INFORMACIÓN
+   ========================================================= */
+.sigeco-information-section,
+.sigeco-catalog-section {
+  padding: 0 25px;
+}
+.sigeco-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 19px;
+}
+.sigeco-section-heading h3 {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin: 0;
+  color: #16464a;
+  font-size: 21px;
+  font-weight: 800;
+}
+.sigeco-heading-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #087768;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 800;
+}
+.sigeco-heading-note {
+  color: #647477;
+  font-size: 12px;
+  font-style: italic;
+}
+/* TARJETAS DE INFORMACIÓN */
+.sigeco-information-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+.sigeco-information-card {
+  min-height: 86px;
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  padding: 13px 18px;
+  border: 1px solid #e3ebe7;
+  border-radius: 17px;
+  background: linear-gradient(135deg, #ffffff 0%, #f7faf8 100%);
+  box-shadow: 0 4px 13px rgba(22, 65, 57, 0.045);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.sigeco-information-card:hover {
+  transform: translateY(-2px);
+  border-color: #c8e2d8;
+  box-shadow: 0 7px 17px rgba(22, 65, 57, 0.08);
+}
+.sigeco-information-icon {
+  width: 53px;
+  height: 53px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px;
+  background: #e8f5ef;
+  color: #087565;
+  font-size: 27px;
+  font-weight: 700;
+}
+.sigeco-information-card strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #172b3c;
+  font-size: 14px;
+  font-weight: 800;
+}
+.sigeco-information-card p {
+  margin: 0;
+  color: #52666a;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+/* =========================================================
+   CATÁLOGO DE PRODUCTOS
+   ========================================================= */
+.sigeco-catalog-section {
+  padding: 24px 25px 26px;
+  border-top: 1px solid #e6eeea;
+  background: linear-gradient(to bottom, #ffffff, #fbfcfb);
+}
+.sigeco-catalog-heading {
+  margin-bottom: 18px;
+}
+.sigeco-text-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  color: #075c55;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sigeco-text-link span {
+  font-size: 22px;
+}
+.sigeco-catalog-preview {
+  min-height: 155px;
+  display: grid;
+  grid-template-columns: minmax(220px, 1.1fr) minmax(180px, 1fr) auto;
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 18px;
+  padding: 16px;
+  border: 1px solid #e3ebe7;
+  border-radius: 18px;
+  background: #f7faf9;
+  box-shadow: 0 4px 13px rgba(22, 65, 57, 0.045);
+}
+.sigeco-preview-images {
+  height: 125px;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  border-radius: 15px;
+}
+.sigeco-preview-product {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #e3e7ed;
+  border-radius: 12px;
+  background: #e8eef3;
+}
+.sigeco-preview-product + .sigeco-preview-product {
+  margin-left: -3px;
+}
+.sigeco-preview-product img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sigeco-preview-description h3 {
+  margin: 0 0 8px;
+  color: #192a3e;
+  font-size: 19px;
+  font-weight: 800;
+}
+.sigeco-preview-description p {
+  margin: 0;
+  color: #536175;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.sigeco-catalog-button {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 10px 16px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(177, 255, 231, 0.38);
+  border-radius: 18px;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.13) 0%, transparent 38%),
+    linear-gradient(135deg, #0b9278 0%, #087461 48%, #034f45 100%);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.15px;
+  line-height: 1.25;
+  white-space: normal;
+  text-align: center;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  box-shadow:
+    0 8px 22px rgba(0, 91, 73, 0.25),
+    0 2px 5px rgba(0, 45, 37, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -2px 0 rgba(0, 40, 34, 0.2);
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease,
+    filter 0.3s ease;
+}
+.sigeco-preview-empty,
+.sigeco-product-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: #e9f4f1;
+  color: #087768;
+  font-size: 28px;
+}
+.sigeco-preview-empty {
+  flex: 1;
+  font-size: 14px;
+}
+.sigeco-preview-empty span {
+  font-size: 30px;
+}
+/* CATÁLOGO COMPLETO */
+.sigeco-full-catalog {
+  padding: 18px 0 22px;
+  scroll-margin-top: 20px;
+}
+.sigeco-full-catalog[hidden] {
+  display: none !important;
+}
+.sigeco-full-catalog-heading {
+  margin-bottom: 17px;
+}
+.sigeco-full-catalog-heading h3 {
+  margin: 0 0 5px;
+  color: #16464a;
+  font-size: 21px;
+}
+.sigeco-full-catalog-heading p {
+  margin: 0;
+  color: #66787b;
+  font-size: 14px;
+}
+.sigeco-products-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+}
+.sigeco-product-card {
+  overflow: hidden;
+  border: 1px solid #e3e9ed;
+  border-radius: 15px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(20, 50, 60, 0.06);
+}
+.sigeco-product-card > img {
+  display: block;
+  width: 100%;
+  height: 145px;
+  object-fit: cover;
+}
+.sigeco-product-info {
+  padding: 13px;
+}
+.sigeco-product-info h4 {
+  margin: 0 0 7px;
+  color: #173c40;
+  font-size: 16px;
+}
+.sigeco-product-info p {
+  margin: 0 0 10px;
+  color: #617174;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.sigeco-product-info strong {
+  color: #087565;
+  font-size: 15px;
+}
+.sigeco-catalog-empty {
+  padding: 30px 15px;
+  border-radius: 15px;
+  background: #f0f7f5;
+  text-align: center;
+}
+.sigeco-catalog-empty span {
+  color: #087768;
+  font-size: 35px;
+}
+.sigeco-catalog-empty h4 {
+  margin: 10px 0 5px;
+  color: #16464a;
+}
+.sigeco-catalog-empty p {
+  margin: 0;
+  color: #687b7c;
+  font-size: 14px;
+}
+/* =========================================================
+   MAPA DE LA FICHA DEL ESTABLECIMIENTO
+   ========================================================= */
+.details-map-section {
+  position: relative;
+  margin-top: 0;
+  padding: 24px 25px 190px;
+  overflow: hidden;
+  border-top: 1px solid #e6eeea;
+  background: linear-gradient(to bottom, #ffffff 0%, #f7fbf9 40%, #edf7f3 100%);
+}
+/* TÍTULO DE UBICACIÓN */
+.details-map-section h3 {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 18px;
+  color: #16464a;
+  font-size: 19px;
+  font-weight: 800;
+}
+/* MAPA */
+#details-map {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 190px;
+  overflow: hidden;
+  border: 1px solid #dce9e3;
+  border-radius: 17px;
+  box-shadow: 0 5px 15px rgba(23, 62, 67, 0.07);
+}
+/* ILUSTRACIÓN INFERIOR DE SOGAMOSO */
+.details-map-section::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  height: 190px;
+  background-image: url("/images/imgdtl2.png");
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 100% auto;
+  opacity: 0.68;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 25%,
+    rgba(0, 0, 0, 0.9) 65%,
+    #000 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 25%,
+    rgba(0, 0, 0, 0.9) 65%,
+    #000 100%
+  );
+  pointer-events: none;
+}
+/* =========================================================
+   ACCESO ADMINISTRATIVO
+   ========================================================= */
+.admin-access {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  color: #8ab9aa;
+  font-size: 19px;
+  text-decoration: none;
+  opacity: 0.75;
+  transition: all 0.25s ease;
+}
+.admin-access:hover {
+  border-color: #8ab9aa;
+  background: rgba(255, 255, 255, 0.1);
+  color: #8ab9aa;
+  opacity: 1;
+}
 .admin-access:focus-visible {
-    outline: 2px solid #8ab9aa;
-    outline-offset: 3px;
+  outline: 2px solid #8ab9aa;
+  outline-offset: 3px;
+}
+/* =========================================================
+   VENTANA ADMINISTRATIVA
+   ========================================================= */
+.admin-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.admin-modal.active {
+  display: flex;
+}
+.admin-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 35, 38, 0.72);
+  backdrop-filter: blur(5px);
+}
+.admin-panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 440px;
+  padding: 32px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+  animation: adminAppear 0.25s ease;
+}
+@keyframes adminAppear {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.admin-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #e5eeea;
+}
+.admin-label {
+  color: #31927d;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+.admin-header h2 {
+  margin: 9px 0;
+  color: #173e43;
+  font-size: 22px;
+}
+.admin-header p {
+  margin: 0;
+  color: #718184;
+  font-size: 13px;
+}
+.admin-close {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: #edf4f0;
+  color: #173e43;
+  font-size: 24px;
+  cursor: pointer;
+}
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px 0;
+}
+.admin-login-form label {
+  color: #173e43;
+  font-size: 13px;
+  font-weight: 700;
+}
+.admin-login-form input {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #dce7e2;
+  border-radius: 9px;
+  outline: none;
+  background: #f9fbfa;
+  color: #173e43;
+  font-size: 14px;
+}
+.admin-login-form input:focus {
+  border-color: #31927d;
+  box-shadow: 0 0 0 3px rgba(49, 146, 125, 0.12);
+}
+.admin-login-form button {
+  margin-top: 12px;
+  padding: 14px;
+  border: none;
+  border-radius: 9px;
+  background: #176b61;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.admin-login-form button:hover {
+  background: #12564f;
+}
+#admin-login-message {
+  min-height: 18px;
+  margin: 4px 0 0;
+  font-size: 12px;
+  text-align: center;
+}
+/* NOTIFICACIONES ADMINISTRATIVAS */
+.admin-login-message {
+  display: none;
+  margin-top: 12px;
+  padding: 13px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  animation: notificationAppear 0.25s ease;
+}
+.admin-login-message.success {
+  display: block;
+  border: 1px solid #86efac;
+  background: #dcfce7;
+  color: #166534;
+}
+.admin-login-message.warning {
+  display: block;
+  border: 1px solid #fde047;
+  background: #fef9c3;
+  color: #854d0e;
+}
+.admin-login-message.error {
+  display: block;
+  border: 1px solid #fca5a5;
+  background: #fee2e2;
+  color: #991b1b;
+}
+.admin-login-message.loading {
+  display: block;
+  border: 1px solid #93c5fd;
+  background: #dbeafe;
+  color: #1e40af;
+}
+@keyframes notificationAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.admin-footer {
+  padding-top: 16px;
+  border-top: 1px solid #e5eeea;
+  color: #849391;
+  font-size: 11px;
+  text-align: center;
+}
+/* =========================================================
+   RESPONSIVE: TABLETAS
+   ========================================================= */
+@media (max-width: 850px) {
+  .navigation {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .details-panel {
+    width: 96vw;
+    max-height: 94vh;
+    border-radius: 19px;
+  }
+  .sigeco-detail-heading {
+    min-height: 190px;
+    padding: 18px 20px 20px;
+  }
+  .sigeco-detail-heading h2 {
+    font-size: 26px;
+  }
+  .sigeco-establishment-description {
+    font-size: 14px;
+  }
+  .sigeco-main-carousel {
+    height: 190px;
+    margin: 17px 13px 24px;
+    border-radius: 17px;
+  }
+  .sigeco-information-section,
+  .sigeco-catalog-section {
+    padding-right: 15px;
+    padding-left: 15px;
+  }
+  .sigeco-section-heading h3 {
+    font-size: 17px;
+  }
+  .sigeco-heading-note {
+    display: none;
+  }
+  .sigeco-information-grid {
+    gap: 11px;
+    margin-bottom: 24px;
+  }
+  .sigeco-information-card {
+    min-height: 78px;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 14px;
+  }
+  .sigeco-information-icon {
+    width: 43px;
+    height: 43px;
+    font-size: 21px;
+  }
+  .sigeco-information-card strong {
+    font-size: 12px;
+  }
+  .sigeco-information-card p {
+    font-size: 12px;
+  }
+  .sigeco-catalog-section {
+    padding: 20px 15px 22px;
+  }
+  .sigeco-catalog-preview {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .sigeco-preview-images {
+    height: 110px;
+    grid-column: 1 / -1;
+  }
+  .sigeco-preview-description h3 {
+    font-size: 15px;
+  }
+  .sigeco-preview-description p {
+    font-size: 12px;
+  }
+  .sigeco-catalog-button {
+    min-height: 52px;
+    padding: 9px;
+    font-size: 11px;
+    white-space: normal;
+  }
+  .sigeco-products-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .details-map-section {
+    padding: 20px 15px 120px;
+  }
+  .details-map-section::after {
+    height: 120px;
+  }
+  #details-map {
+    height: 190px;
+  }
+}
+/* =========================================================
+   RESPONSIVE: CELULARES
+   ========================================================= */
+@media (max-width: 520px) {
+  .header-button {
+    display: none;
+  }
+  .hero {
+    padding: 70px 0;
+  }
+  .hero h1 {
+    letter-spacing: -1px;
+  }
+  .search-box {
+    flex-direction: column;
+  }
+  .section-heading h2,
+  .about-section h2 {
+    font-size: 25px;
+  }
+  .establishment-card {
+    padding: 17px;
+  }
+  .establishment-card h3 {
+    font-size: 17px;
+  }
+  .locate-establishment,
+  .details-establishment {
+    width: 100%;
+  }
+  .details-modal {
+    padding: 10px;
+  }
+  .details-panel {
+    width: 100%;
+    max-height: 95vh;
+    padding: 0;
+    border-radius: 17px;
+  }
+  .details-close {
+    width: 35px;
+    height: 35px;
+  }
+  .sigeco-detail-heading {
+    min-height: 190px;
+    padding: 25px 12px;
+  }
+  .sigeco-detail-heading h2 {
+    font-size: 26px;
+  }
+  .sigeco-establishment-description {
+    font-size: 12px;
+  }
+  .sigeco-brand-pill {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  .sigeco-main-carousel {
+    height: 190px;
+    margin: 15px 10px 21px;
+  }
+  .sigeco-carousel-arrow {
+    width: 35px;
+    height: 35px;
+    font-size: 27px;
+  }
+  .sigeco-information-section,
+  .sigeco-catalog-section {
+    padding-right: 13px;
+    padding-left: 13px;
+  }
+  .sigeco-information-grid {
+    grid-template-columns: 1fr;
+    gap: 11px;
+    margin-bottom: 22px;
+  }
+  .sigeco-information-card {
+    min-height: 76px;
+  }
+  .sigeco-products-grid {
+    grid-template-columns: 1fr;
+  }
+  .sigeco-product-card > img {
+    height: 190px;
+  }
+  .sigeco-text-link {
+    font-size: 11px;
+  }
+  .details-map-section {
+    padding: 18px 13px 120px;
+  }
+  .details-map-section::after {
+    height: 120px;
+  }
+  #details-map {
+    height: 190px;
+  }
+  .admin-panel {
+    padding: 23px;
+    border-radius: 16px;
+  }
+  .admin-header h2 {
+    font-size: 19px;
+  }
+}
+@media (max-width: 420px) {
+  .sigeco-text-link {
+    font-size: 11px;
+  }
+}
+/* =========================================================
+   ACCESIBILIDAD Y MOVIMIENTO
+   ========================================================= */
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid #8ac8b8;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-/* =========================================
-   VENTANA DE ACCESO ADMINISTRATIVO
-========================================= */
+/* =========================================================
+   SIGECO-SOG — ACERCA DEL PROYECTO
+   SECCIÓN EDITORIAL DESPLEGABLE
+   ========================================================= */
 
-.admin-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 11000;
-    display: none;
+#acerca {
+  padding-top: 68px;
+  padding-bottom: 78px;
+  scroll-margin-top: 90px;
+}
+
+.sigeco-about {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #dce9e3;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 14px 45px rgba(15, 62, 48, 0.055);
+  transition:
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+
+.sigeco-about:hover {
+  border-color: #bfdccd;
+  box-shadow: 0 20px 55px rgba(15, 62, 48, 0.085);
+}
+
+/* ENCABEZADO DESPLEGABLE */
+
+.sigeco-about-toggle {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  width: 100%;
+  padding: 30px 36px;
+  border: none;
+  background: linear-gradient(120deg, #ffffff, #f5faf7);
+  color: #103d36;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.sigeco-about-toggle:hover {
+  background: linear-gradient(120deg, #f7fcf9, #eaf5ef);
+}
+
+.sigeco-about-toggle:focus-visible {
+  outline: 3px solid #55aa88;
+  outline-offset: -4px;
+}
+
+.sigeco-about-toggle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 62px;
+  width: 62px;
+  height: 62px;
+  border-radius: 18px;
+  background: #e3f3eb;
+  color: #217657;
+  font-size: 29px;
+}
+
+.sigeco-about-toggle-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.sigeco-about-eyebrow {
+  color: #248464;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.sigeco-about-toggle-text strong {
+  color: #103c37;
+  font-size: clamp(20px, 2.4vw, 28px);
+  font-weight: 800;
+  letter-spacing: -0.6px;
+}
+
+.sigeco-about-toggle-text small {
+  color: #70857c;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.sigeco-about-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #d8e9df;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #176a52;
+  font-size: 28px;
+  line-height: 1;
+  transition:
+    transform 0.45s ease,
+    background 0.3s ease;
+}
+
+#acerca.is-open .sigeco-about-chevron {
+  transform: rotate(180deg);
+  background: #e3f3eb;
+}
+
+/* APERTURA ANIMADA */
+
+.sigeco-about-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.4s ease,
+    visibility 0.4s ease;
+}
+
+#acerca.is-open .sigeco-about-content {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+}
+
+.sigeco-about-content-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* PORTADA EDITORIAL */
+
+.sigeco-about-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 340px;
+  padding: 65px clamp(28px, 6vw, 85px);
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 85% 15%,
+      rgba(123, 205, 166, 0.17),
+      transparent 40%
+    ),
+    linear-gradient(135deg, #103d37, #174e43 65%, #21644e);
+  color: #ffffff;
+}
+
+.sigeco-about-hero::after {
+  content: "";
+  position: absolute;
+  right: -75px;
+  bottom: -175px;
+  width: 380px;
+  height: 380px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 55px rgba(255, 255, 255, 0.025),
+    0 0 0 110px rgba(255, 255, 255, 0.018);
+  pointer-events: none;
+}
+
+.sigeco-about-hero-label {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 22px;
+  color: #a7e8c9;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2.3px;
+}
+
+.sigeco-about-hero h2 {
+  position: relative;
+  z-index: 1;
+  max-width: 850px;
+  margin: 0 0 20px;
+  color: #ffffff;
+  font-size: clamp(31px, 4.5vw, 55px);
+  font-weight: 800;
+  line-height: 1.14;
+  letter-spacing: -1.6px;
+}
+
+.sigeco-about-hero p {
+  position: relative;
+  z-index: 1;
+  max-width: 670px;
+  margin: 0;
+  color: #d0e9dc;
+  font-size: 15px;
+  line-height: 1.9;
+}
+
+/* CONTENIDO */
+
+.sigeco-about-body {
+  padding: clamp(26px, 5vw, 65px);
+}
+
+.sigeco-about-intro {
+  max-width: 760px;
+  margin-bottom: 46px;
+}
+
+.sigeco-about-kicker {
+  display: block;
+  margin-bottom: 13px;
+  color: #238461;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.sigeco-about-intro h3 {
+  margin: 0 0 18px;
+  color: #123d36;
+  font-size: clamp(23px, 3vw, 34px);
+  line-height: 1.3;
+  letter-spacing: -0.7px;
+}
+
+.sigeco-about-intro p,
+.sigeco-about-item p,
+.sigeco-about-academic p {
+  color: #62786e;
+  font-size: 14px;
+  line-height: 1.95;
+
+  text-align: justify;
+  text-justify: inter-word;
+
+  hyphens: none;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+/* CUADRÍCULA EDITORIAL */
+
+.sigeco-about-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.sigeco-about-item {
+  padding: 30px;
+  border: 1px solid #e0ebe5;
+  border-radius: 18px;
+  background: #fbfdfb;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.sigeco-about-item:hover {
+  transform: translateY(-5px);
+  border-color: #bcdcca;
+  box-shadow: 0 15px 32px rgba(15, 62, 48, 0.07);
+}
+
+.sigeco-about-number {
+  display: block;
+  margin-bottom: 24px;
+  color: #258563;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+}
+
+.sigeco-about-item h3 {
+  margin: 0 0 14px;
+  color: #153f37;
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.sigeco-about-item p {
+  margin: 0 0 12px;
+}
+
+.sigeco-about-item p:last-child {
+  margin-bottom: 0;
+}
+
+/* ORIGEN ACADÉMICO */
+
+.sigeco-about-academic {
+  display: flex;
+  align-items: flex-start;
+  gap: 25px;
+  margin-top: 24px;
+  padding: 34px;
+  border: 1px solid #d8e9df;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f1f9f4, #eaf5ef);
+}
+
+.sigeco-about-academic-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 58px;
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  background: #d6eee0;
+  color: #217657;
+  font-size: 32px;
+}
+
+.sigeco-about-academic h3 {
+  margin: 0 0 10px;
+  color: #153f37;
+  font-size: 21px;
+}
+
+.sigeco-about-academic p {
+  margin: 0;
+}
+
+/* CIERRE */
+
+.sigeco-about-closing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 260px;
+  margin-top: 28px;
+  padding: 48px 30px;
+  box-sizing: border-box;
+
+  border-radius: 18px;
+  background: #103e37;
+  text-align: center;
+}
+
+.sigeco-about-closing > * {
+  width: 100%;
+  max-width: 700px;
+  text-align: center;
+}
+
+.sigeco-about-closing span {
+  color: #a9e8ca;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.sigeco-about-closing h3 {
+  margin: 20px auto;
+  color: #ffffff;
+  font-size: clamp(23px, 3vw, 34px);
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.sigeco-about-closing p {
+  margin: 0 auto;
+  color: #bad9c9;
+  font-size: 13px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+  #acerca {
+    padding-top: 45px;
+    padding-bottom: 55px;
+    scroll-margin-top: 75px;
+  }
+
+  .sigeco-about {
+    border-radius: 18px;
+  }
+
+  .sigeco-about-toggle {
+    gap: 13px;
+    padding: 22px 18px;
+  }
+
+  .sigeco-about-toggle-icon {
+    flex-basis: 45px;
+    width: 45px;
+    height: 45px;
+    border-radius: 13px;
+    font-size: 23px;
+  }
+
+  .sigeco-about-toggle-text strong {
+    font-size: 19px;
+  }
+
+  .sigeco-about-toggle-text small {
+    font-size: 12px;
+  }
+
+  .sigeco-about-chevron {
+    display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-}
 
-.admin-modal.active {
-    display: flex;
-}
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    padding: 0;
 
-.admin-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(15, 35, 38, 0.72);
-    backdrop-filter: blur(5px);
-}
-
-.admin-panel {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 440px;
-    padding: 32px;
-    background: #ffffff;
-    border-radius: 20px;
-    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
-    animation: adminAppear 0.25s ease;
-}
-
-@keyframes adminAppear {
-    from {
-        opacity: 0;
-        transform: translateY(20px) scale(0.98);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.admin-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 15px;
-    padding-bottom: 22px;
-    border-bottom: 1px solid #e5eeea;
-}
-
-.admin-label {
-    color: #31927d;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 2px;
-}
-
-.admin-header h2 {
-    color: #173e43;
-    font-size: 22px;
-    margin: 9px 0;
-}
-
-.admin-header p {
-    color: #718184;
-    font-size: 13px;
-    margin: 0;
-}
-
-.admin-close {
-    width: 36px;
-    height: 36px;
-    flex-shrink: 0;
-    border: none;
+    border: 1px solid #d8e9df;
     border-radius: 50%;
-    background: #edf4f0;
-    color: #173e43;
-    font-size: 24px;
-    cursor: pointer;
-}
+    background: #ffffff;
+    color: #176a52;
 
-.admin-login-form {
-    display: flex;
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1;
+
+    transform-origin: center center;
+
+    transition:
+      transform 0.45s ease,
+      background 0.3s ease;
+  }
+
+  /* Mantiene la animación al desplegar */
+  #acerca.is-open .sigeco-about-chevron {
+    transform: rotate(180deg);
+    background: #e3f3eb;
+  }
+
+  .sigeco-about-hero {
+    min-height: 300px;
+    padding: 45px 25px;
+  }
+
+  .sigeco-about-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sigeco-about-item {
+    padding: 25px;
+  }
+
+  .sigeco-about-academic {
     flex-direction: column;
-    gap: 10px;
-    padding: 24px 0;
+    padding: 25px;
+  }
+
+  .sigeco-about-closing {
+    padding: 38px 23px;
+  }
 }
 
-.admin-login-form label {
-    color: #173e43;
-    font-size: 13px;
-    font-weight: 700;
+@media (prefers-reduced-motion: reduce) {
+  .sigeco-about,
+  .sigeco-about-toggle,
+  .sigeco-about-chevron,
+  .sigeco-about-content,
+  .sigeco-about-item {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
-.admin-login-form input {
+/* =========================================================
+   HORARIO DE ATENCIÓN: DETALLE PÚBLICO
+   ========================================================= */
+
+.sigeco-hours-section {
+  margin: 28px 0;
+  overflow: hidden;
+  border: 1px solid #e0ebe5;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 12px 38px rgba(15, 65, 49, 0.055);
+}
+
+.sigeco-hours-heading {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  padding: 28px 30px;
+  background: linear-gradient(115deg, #f1faf5 0%, #ffffff 75%);
+  border-bottom: 1px solid #e6efe9;
+}
+
+.sigeco-hours-heading-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  color: #16885e;
+  background: #e0f3e9;
+  border: 1px solid #c8e9d7;
+}
+
+.sigeco-hours-heading-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.sigeco-hours-eyebrow {
+  display: block;
+  margin-bottom: 5px;
+  color: #19885d;
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+.sigeco-hours-heading h3 {
+  margin: 0;
+  color: #153f34;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.sigeco-hours-heading p {
+  margin: 6px 0 0;
+  color: #789087;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.sigeco-hours-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  flex-shrink: 0;
+  padding: 10px 15px;
+  border-radius: 50px;
+  font-size: 0.79rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.sigeco-hours-status.is-open {
+  background: #e2f7e9;
+  color: #147a49;
+  border: 1px solid #bce9cb;
+}
+
+.sigeco-hours-status.is-closed {
+  background: #f2f4f3;
+  color: #64736d;
+  border: 1px solid #e3e8e5;
+}
+
+.sigeco-hours-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.sigeco-hours-status.is-open .sigeco-hours-status-dot {
+  box-shadow: 0 0 0 4px rgba(27, 157, 91, 0.12);
+}
+
+.sigeco-hours-body {
+  padding: 12px 30px 22px;
+}
+
+.sigeco-hours-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.sigeco-hours-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 62px;
+  padding: 13px 16px;
+  border-bottom: 1px solid #eef2ef;
+  transition: background 0.2s ease;
+}
+
+.sigeco-hours-row:last-child {
+  border-bottom: none;
+}
+
+.sigeco-hours-row:hover {
+  background: #f8fbf9;
+}
+
+.sigeco-hours-row.is-today {
+  margin: 5px 0;
+  border: 1px solid #c7e8d4;
+  border-radius: 13px;
+  background: #f0faf4;
+}
+
+.sigeco-hours-day {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
+.sigeco-hours-day-dot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #bdcbc3;
+}
+
+.sigeco-hours-row.is-today .sigeco-hours-day-dot {
+  background: #1a9b62;
+  box-shadow: 0 0 0 4px rgba(26, 155, 98, 0.1);
+}
+
+.sigeco-hours-day strong {
+  color: #29493e;
+  font-size: 0.89rem;
+  font-weight: 700;
+}
+
+.sigeco-hours-today {
+  padding: 4px 7px;
+  border-radius: 5px;
+  background: #d9f1e2;
+  color: #16804d;
+  font-size: 0.6rem;
+  font-weight: 850;
+  letter-spacing: 0.05em;
+}
+
+.sigeco-hours-times {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.sigeco-hours-time {
+  color: #244e3e;
+  font-size: 0.87rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sigeco-hours-dash {
+  padding: 0 6px;
+  color: #9cb3a5;
+}
+
+.sigeco-hours-closed {
+  color: #9ba8a1;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.sigeco-hours-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 17px;
+  border-top: 1px solid #edf2ee;
+  color: #8b9e93;
+  font-size: 0.76rem;
+  font-weight: 500;
+}
+
+.sigeco-hours-footer span {
+  font-size: 1.1rem;
+  color: #299568;
+}
+
+.sigeco-hours-empty {
+  padding: 30px;
+  color: #788b81;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
+@media (max-width: 680px) {
+  .sigeco-hours-heading {
+    flex-wrap: wrap;
+    padding: 22px 18px;
+    gap: 12px;
+  }
+
+  .sigeco-hours-heading-icon {
+    width: 46px;
+    height: 46px;
+  }
+
+  .sigeco-hours-status {
     width: 100%;
-    padding: 13px;
-    border: 1px solid #dce7e2;
-    border-radius: 9px;
-    background: #f9fbfa;
-    color: #173e43;
-    font-size: 14px;
-    outline: none;
-}
+    margin-top: 6px;
+  }
 
-.admin-login-form input:focus {
-    border-color: #31927d;
-    box-shadow: 0 0 0 3px rgba(49, 146, 125, 0.12);
-}
+  .sigeco-hours-body {
+    padding: 8px 14px 18px;
+  }
 
-.admin-login-form button {
-    margin-top: 12px;
-    padding: 14px;
-    border: none;
-    border-radius: 9px;
-    background: #176b61;
-    color: #ffffff;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
+  .sigeco-hours-row {
+    gap: 10px;
+    padding: 13px 10px;
+  }
 
-.admin-login-form button:hover {
-    background: #12564f;
-}
+  .sigeco-hours-day {
+    gap: 7px;
+  }
 
-#admin-login-message {
-    min-height: 18px;
-    margin: 4px 0 0;
-    font-size: 12px;
-    text-align: center;
-}
+  .sigeco-hours-day strong,
+  .sigeco-hours-time {
+    font-size: 0.78rem;
+  }
 
-.admin-footer {
-    padding-top: 16px;
-    border-top: 1px solid #e5eeea;
-    color: #849391;
-    font-size: 11px;
-    text-align: center;
-}
-
-@media (max-width: 480px) {
-    .admin-panel {
-        padding: 23px;
-        border-radius: 16px;
-    }
-
-    .admin-header h2 {
-        font-size: 19px;
-    }
-}
-/* Notificaciones del acceso administrativo */
-.admin-login-message {
-    display: none;
-    padding: 13px 16px;
-    margin-top: 12px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 1.5;
-    animation: notificationAppear 0.25s ease;
-}
-
-/* Acceso autorizado: verde */
-.admin-login-message.success {
-    display: block;
-    color: #166534;
-    background: #dcfce7;
-    border: 1px solid #86efac;
-}
-
-/* Credenciales incorrectas: amarillo */
-.admin-login-message.warning {
-    display: block;
-    color: #854d0e;
-    background: #fef9c3;
-    border: 1px solid #fde047;
-}
-
-/* Acceso denegado: rojo */
-.admin-login-message.error {
-    display: block;
-    color: #991b1b;
-    background: #fee2e2;
-    border: 1px solid #fca5a5;
-}
-
-/* Verificando acceso */
-.admin-login-message.loading {
-    display: block;
-    color: #1e40af;
-    background: #dbeafe;
-    border: 1px solid #93c5fd;
-}
-
-@keyframes notificationAppear {
-    from {
-        opacity: 0;
-        transform: translateY(-5px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  .sigeco-hours-dash {
+    padding: 0 2px;
+  }
 }

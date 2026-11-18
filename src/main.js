@@ -1,31 +1,49 @@
+/* =========================================================
+   SIGECO-SOG
+   ARCHIVO PRINCIPAL DE LA APLICACIÓN
+   ========================================================= */
 
-// Importa los estilos visuales de la aplicación.
-import './css/style.css';
-import { supabase } from './js/supabase.js';
+// Estilos principales.
+import "./css/style.css";
+import logoSigeco from "./icons/iconpagina.jpg";
+// Conexión con Supabase.
+import { supabase } from "./js/supabase.js";
 
-// Importa las funciones para consultar la información almacenada en Supabase.
+// Funciones de establecimientos.
 import {
-    obtenerCategorias,
-    obtenerEstablecimientos
-} from './js/establecimientos.js';
+  obtenerCategorias,
+  obtenerEstablecimientos,
+  obtenerUrlImagen,
+} from "./js/establecimientos.js";
 
-// Importa las funciones para administrar los mapas de SIGECO-SOG.
+// Funciones de mapas.
 import {
-    inicializarMapa,
-    mostrarEstablecimientosEnMapa,
-    localizarEstablecimientoEnMapa,
-    mostrarMapaDetalles
-} from './js/mapa.js';
+  inicializarMapa,
+  mostrarEstablecimientosEnMapa,
+  localizarEstablecimientoEnMapa,
+  mostrarMapaDetalles,
+} from "./js/mapa.js";
 
-// Guarda los establecimientos que se están mostrando en los resultados.
+/* =========================================================
+   VARIABLES GENERALES
+   ========================================================= */
+
 let resultadosActuales = [];
+let establecimientosDisponibles = [];
 
-// Construye la estructura principal de la página.
-document.querySelector('#app').innerHTML = `
+/* =========================================================
+   ESTRUCTURA PRINCIPAL DE LA PÁGINA
+   ========================================================= */
+
+document.querySelector("#app").innerHTML = `
     <header class="header">
         <div class="container header-content">
-            <a href="#" class="brand">
-                <span class="brand-icon">S</span>
+
+            <a href="#inicio" class="brand">
+             <span class="brand-icon">
+    <img src="${logoSigeco}" alt="SIGECO-SOG">
+</span>
+
                 <span>
                     <strong>SIGECO-SOG</strong>
                     <small>Oferta local de Sogamoso</small>
@@ -39,25 +57,29 @@ document.querySelector('#app').innerHTML = `
                 <a href="#acerca">Acerca del proyecto</a>
             </nav>
 
-            <!-- Acceso discreto al módulo de administración. -->
-<a
-    href="#"
-    class="admin-access"
-    id="admin-access"
-    aria-label="Acceso administrativo"
-    title="Acceso administrativo"
->
-    <span class="admin-access-icon">♙</span>
-</a>
+            <a
+                href="#"
+                class="admin-access"
+                id="admin-access"
+                aria-label="Acceso administrativo"
+                title="Acceso administrativo"
+            >
+                <span class="admin-access-icon">♙</span>
+            </a>
+
         </div>
     </header>
 
     <main>
+
         <section class="hero" id="inicio">
             <div class="container hero-content">
+
                 <span class="eyebrow">SOGAMOSO · BOYACÁ</span>
 
-                <h1>Descubre la oferta comercial y productiva de nuestra ciudad</h1>
+                <h1>
+                    Descubre la oferta comercial y productiva de nuestra ciudad
+                </h1>
 
                 <p>
                     Conoce, localiza y consulta los establecimientos,
@@ -65,44 +87,67 @@ document.querySelector('#app').innerHTML = `
                 </p>
 
                 <form class="search-box" id="search-form">
+
                     <input
                         type="search"
                         id="search-input"
                         placeholder="¿Qué establecimiento o servicio buscas?"
                         aria-label="Buscar establecimientos"
                     >
+
                     <button type="submit">Buscar</button>
-                    <button type="button" id="clear-search">Limpiar</button>
+
+                    <button type="button" id="clear-search">
+                        Limpiar
+                    </button>
+
                 </form>
 
                 <p class="search-hint">
                     Explora negocios, productos, servicios y ubicaciones.
                 </p>
 
-                <div id="search-results" class="search-results"></div>
+                <div
+                    id="search-results"
+                    class="search-results"
+                    aria-live="polite"
+                ></div>
+
             </div>
         </section>
 
+
         <section class="section container" id="categorias">
+
             <div class="section-heading">
                 <div>
                     <span class="eyebrow">EXPLORA</span>
+
                     <h2>Encuentra lo que necesitas</h2>
-                    <p>Consulta la oferta local organizada por categorías.</p>
+
+                    <p>
+                        Consulta la oferta local organizada por categorías.
+                    </p>
                 </div>
             </div>
 
             <div class="category-grid" id="category-grid">
                 <p>Cargando categorías...</p>
             </div>
+
         </section>
 
+
         <section class="map-section" id="mapa">
+
             <div class="container">
+
                 <div class="section-heading">
                     <div>
                         <span class="eyebrow">UBICACIÓN GEOGRÁFICA</span>
+
                         <h2>Explora Sogamoso en el mapa</h2>
+
                         <p>
                             Consulta la distribución geográfica de los
                             establecimientos registrados en el sistema.
@@ -111,468 +156,2172 @@ document.querySelector('#app').innerHTML = `
                 </div>
 
                 <div class="map-placeholder" id="map"></div>
+
             </div>
+
         </section>
 
-        <section class="about-section container" id="acerca">
-            <span class="eyebrow">SOBRE EL PROYECTO</span>
-            <h2>Conectando la información de la oferta local</h2>
+
+        
+<section class="about-section container" id="acerca">
+  <div class="sigeco-about">
+
+    <button
+      type="button"
+      class="sigeco-about-toggle"
+      id="sigeco-about-toggle"
+      aria-expanded="false"
+      aria-controls="sigeco-about-content"
+    >
+      <span class="sigeco-about-toggle-icon" aria-hidden="true">✦</span>
+
+      <span class="sigeco-about-toggle-text">
+        <span class="sigeco-about-eyebrow">CONOCE NUESTRA INICIATIVA</span>
+        <strong>Acerca de SIGECO-SOG</strong>
+        <small>Descubre el origen, propósito y visión de nuestro proyecto.</small>
+      </span>
+
+      <span class="sigeco-about-chevron" aria-hidden="true">
+    <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="m6 9 6 6 6-6"></path>
+    </svg>
+</span>
+    </button>
+
+    <div class="sigeco-about-content" id="sigeco-about-content" inert>
+      <div class="sigeco-about-content-inner">
+
+        <div class="sigeco-about-hero">
+          <span class="sigeco-about-hero-label">
+            SIGECO-SOG · SOGAMOSO, BOYACÁ
+          </span>
+
+          <h2>Información que conecta.<br>Territorio que inspira.</h2>
+
+          <p>
+            Una propuesta tecnológica que busca acercar los establecimientos,
+            emprendimientos y unidades productivas de Sogamoso a los ciudadanos,
+            facilitando el acceso a la información de la oferta local.
+          </p>
+        </div>
+
+        <div class="sigeco-about-body">
+
+          <div class="sigeco-about-intro">
+            <span class="sigeco-about-kicker">NUESTRA ESENCIA</span>
+            <h3>Conoce el proyecto detrás de la plataforma</h3>
             <p>
-                SIGECO-SOG es una iniciativa orientada a organizar,
-                caracterizar y facilitar la consulta de establecimientos
-                comerciales, emprendimientos y unidades productivas
-                del municipio de Sogamoso, Boyacá.
+              SIGECO-SOG nace como una propuesta académica orientada a
+              aprovechar la tecnología para organizar, caracterizar y
+              consultar información sobre la actividad comercial y
+              productiva del municipio de Sogamoso, Boyacá.
             </p>
-        </section>
+          </div>
+
+          <div class="sigeco-about-grid">
+
+            <article class="sigeco-about-item">
+              <span class="sigeco-about-number">01 / EL PROYECTO</span>
+              <h3>¿Qué es SIGECO-SOG?</h3>
+              <p>
+                Es el Sistema de Información Georreferenciada para la
+                Caracterización y Conexión de Emprendimientos de
+                Sogamoso, Boyacá.
+              </p>
+              <p>
+                Su propuesta consiste en reunir información de
+                establecimientos, emprendimientos y unidades productivas
+                en una plataforma digital que facilite su consulta
+                y ubicación geográfica.
+              </p>
+            </article>
+
+            <article class="sigeco-about-item">
+              <span class="sigeco-about-number">02 / EL ORIGEN</span>
+              <h3>¿Por qué surge?</h3>
+              <p>
+                Surge ante la necesidad de facilitar el acceso a
+                información organizada sobre la oferta comercial
+                y productiva de Sogamoso.
+              </p>
+              <p>
+                La propuesta busca ofrecer una alternativa digital
+                para que las personas puedan conocer negocios,
+                productos y servicios disponibles en el municipio.
+              </p>
+            </article>
+
+            <article class="sigeco-about-item">
+              <span class="sigeco-about-number">03 / EL PROPÓSITO</span>
+              <h3>¿Qué buscamos lograr?</h3>
+              <p>
+                Facilitar la caracterización, organización, ubicación
+                y consulta de establecimientos y emprendimientos locales.
+              </p>
+              <p>
+                También buscamos contribuir a su visibilidad y
+                favorecer la conexión entre la oferta de los negocios
+                y las necesidades de los ciudadanos.
+              </p>
+            </article>
+
+            <article class="sigeco-about-item">
+              <span class="sigeco-about-number">04 / LA TECNOLOGÍA</span>
+              <h3>¿Cómo funciona?</h3>
+              <p>
+                La plataforma permite explorar categorías, buscar
+                establecimientos por su nombre o por los productos
+                y servicios que ofrecen, consultar información
+                y visualizar ubicaciones en un mapa interactivo.
+              </p>
+              <p>
+                De esta manera, la información puede consultarse
+                desde un mismo entorno digital.
+              </p>
+            </article>
+
+          </div>
+
+          <div class="sigeco-about-academic">
+            <span class="sigeco-about-academic-icon" aria-hidden="true">✧</span>
+
+            <div>
+              <span class="sigeco-about-kicker">ORIGEN ACADÉMICO</span>
+              <h3>Una iniciativa que nace desde la formación</h3>
+              <p>
+                SIGECO-SOG es un proyecto desarrollado en el contexto
+                académico de la Universidad Nacional Abierta y a
+                Distancia (UNAD), orientado a aplicar conocimientos
+                tecnológicos a una necesidad del entorno local.
+              </p>
+            </div>
+          </div>
+
+          <div class="sigeco-about-closing">
+            <span>SIGECO-SOG · 2026</span>
+            <h3>Conocer nuestro territorio también es una forma de conectarlo.</h3>
+            <p>Sogamoso, Boyacá · Colombia</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
     </main>
 
+
     <footer class="footer">
+
         <div class="container">
+
             <strong>SIGECO-SOG</strong>
-            <p>Sistema de Información Georreferenciada de Sogamoso, Boyacá.</p>
+
+            <p>
+                Sistema de Información Georreferenciada de Sogamoso, Boyacá.
+            </p>
+
             <small>Proyecto académico · 2026</small>
+
         </div>
+
     </footer>
+
+
+    <!-- VENTANA DE DETALLES -->
+
+    <div
+        class="details-modal"
+        id="details-modal"
+        aria-hidden="true"
+    >
+
+        <div
+            class="details-overlay"
+            id="details-overlay"
+        ></div>
+
+        <section
+            class="details-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Información del establecimiento"
+        >
+
+            <div class="details-header">
+
+                <button
+                    type="button"
+                    class="details-close"
+                    id="close-details"
+                    aria-label="Cerrar detalles"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <div
+                class="details-content"
+                id="details-content"
+            ></div>
+
+        </section>
+
+    </div>
+
+
+    <!-- VENTANA DE ACCESO ADMINISTRATIVO -->
+
+    <div
+        class="admin-modal"
+        id="admin-modal"
+        aria-hidden="true"
+    >
+
+        <div
+            class="admin-overlay"
+            id="admin-overlay"
+        ></div>
+
+        <section
+            class="admin-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Acceso administrativo"
+        >
+
+            <div class="admin-header">
+
+                <div>
+                    <span class="admin-label">SIGECO-SOG</span>
+
+                    <h2>Acceso administrativo</h2>
+
+                    <p>Ingresa tus credenciales para continuar.</p>
+                </div>
+
+                <button
+                    type="button"
+                    class="admin-close"
+                    id="close-admin"
+                    aria-label="Cerrar ventana"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <form
+                class="admin-login-form"
+                id="admin-login-form"
+            >
+
+                <label for="admin-email">
+                    Correo electrónico
+                </label>
+
+                <input
+                    type="email"
+                    id="admin-email"
+                    placeholder="Correo electrónico"
+                    autocomplete="username"
+                    required
+                >
+
+                <label for="admin-password">
+                    Contraseña
+                </label>
+
+                <input
+                    type="password"
+                    id="admin-password"
+                    placeholder="Contraseña"
+                    autocomplete="current-password"
+                    required
+                >
+
+                <button type="submit">
+                    Iniciar sesión
+                </button>
+
+                <p
+                    id="admin-login-message"
+                    aria-live="polite"
+                ></p>
+
+            </form>
+
+
+            <div class="admin-footer">
+                Acceso exclusivo para usuarios autorizados.
+            </div>
+
+        </section>
+
+    </div>
 `;
 
-// Prepara los textos para buscar sin importar tildes o mayúsculas.
+/* =========================================================
+   FUNCIONES GENERALES
+   ========================================================= */
+
+// Normaliza los textos para facilitar las búsquedas.
 function normalizarTexto(texto) {
-    return (texto || '')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .trim();
+  return String(texto || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 }
 
-// Protege los textos antes de mostrarlos dentro del HTML.
+// Protege los textos antes de insertarlos en HTML.
 function escapeHTML(texto) {
-    return String(texto).replace(/[&<>"']/g, caracter => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-    })[caracter]);
+  return String(texto ?? "").replace(
+    /[&<>"']/g,
+    (caracter) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[caracter],
+  );
 }
 
-// Obtiene los elementos del formulario de búsqueda.
-const searchForm = document.querySelector('#search-form');
-const searchInput = document.querySelector('#search-input');
-const resultsContainer = document.querySelector('#search-results');
-const clearSearchButton = document.querySelector('#clear-search');
+// Obtiene la URL pública de una imagen.
+function obtenerImagenEstablecimiento(imagen) {
+  if (!imagen?.ruta_archivo) {
+    return null;
+  }
 
-// Obtiene los elementos de la ventana flotante de detalles.
-const detailsModal = document.querySelector('#details-modal');
-const detailsContent = document.querySelector('#details-content');
-const closeDetailsButton = document.querySelector('#close-details');
-const detailsOverlay = document.querySelector('#details-overlay');
-// Obtiene los elementos de la ventana de acceso administrativo.
-const adminAccessButton = document.querySelector('#admin-access');
-const adminModal = document.querySelector('#admin-modal');
-const adminOverlay = document.querySelector('#admin-overlay');
-const closeAdminButton = document.querySelector('#close-admin');
-// Obtiene los elementos del formulario administrativo.
-const adminLoginForm = document.querySelector('#admin-login-form');
-const adminEmail = document.querySelector('#admin-email');
-const adminPassword = document.querySelector('#admin-password');
-const adminLoginMessage = document.querySelector('#admin-login-message');
+  return obtenerUrlImagen(imagen.ruta_archivo);
+}
 
+// Obtiene la imagen representativa de un establecimiento.
+function obtenerImagenRepresentativa(establecimiento) {
+  const imagenes = establecimiento.imagenes_establecimiento || [];
 
-// Gestiona el inicio de sesión del administrador.
-adminLoginForm.addEventListener('submit', async (evento) => {
-    evento.preventDefault();
+  const imagen =
+    imagenes.find((item) => item.tipo === "portada") ||
+    imagenes.find((item) => item.tipo === "logo") ||
+    imagenes.find((item) => item.tipo === "galeria");
 
-    // Función para mostrar notificaciones según el resultado.
-    const mostrarMensaje = (mensaje, tipo) => {
-        adminLoginMessage.textContent = mensaje;
-        adminLoginMessage.className = `admin-login-message ${tipo}`;
-    };
+  return imagen ? obtenerImagenEstablecimiento(imagen) : null;
+}
 
-    mostrarMensaje('Verificando acceso...', 'loading');
+// Formatea precios en pesos colombianos.
+function formatearPrecio(precio) {
+  if (precio === null || precio === undefined || precio === "") {
+    return "Consultar precio";
+  }
 
+  const valor = Number(precio);
+
+  if (!Number.isFinite(valor)) {
+    return "Consultar precio";
+  }
+
+  return `$ ${valor.toLocaleString("es-CO")}`;
+}
+
+/* =========================================================
+   ELEMENTOS DE LA INTERFAZ
+   ========================================================= */
+
+// Búsqueda.
+const searchForm = document.querySelector("#search-form");
+const searchInput = document.querySelector("#search-input");
+const resultsContainer = document.querySelector("#search-results");
+const clearSearchButton = document.querySelector("#clear-search");
+
+// Ventana de detalles.
+const detailsModal = document.querySelector("#details-modal");
+const detailsContent = document.querySelector("#details-content");
+const closeDetailsButton = document.querySelector("#close-details");
+const detailsOverlay = document.querySelector("#details-overlay");
+
+// Ventana administrativa.
+const adminAccessButton = document.querySelector("#admin-access");
+const adminModal = document.querySelector("#admin-modal");
+const adminOverlay = document.querySelector("#admin-overlay");
+const closeAdminButton = document.querySelector("#close-admin");
+
+// Formulario administrativo.
+const adminLoginForm = document.querySelector("#admin-login-form");
+const adminEmail = document.querySelector("#admin-email");
+const adminPassword = document.querySelector("#admin-password");
+const adminLoginMessage = document.querySelector("#admin-login-message");
+
+/* =========================================================
+   CONTROL DE VENTANAS
+   ========================================================= */
+
+// Abre la ventana de detalles.
+function abrirDetalles() {
+  detailsModal.classList.add("active");
+  detailsModal.setAttribute("aria-hidden", "false");
+
+  document.body.style.overflow = "hidden";
+}
+
+// Cierra la ventana de detalles.
+function cerrarDetalles() {
+  // Retira el foco de los elementos internos antes de ocultar el modal.
+  if (detailsModal.contains(document.activeElement)) {
+    document.activeElement.blur();
+  }
+
+  detailsModal.classList.remove("active");
+
+  detailsModal.setAttribute("aria-hidden", "true");
+
+  document.body.style.overflow = "";
+}
+
+// Abre el acceso administrativo.
+function abrirAdmin() {
+  adminModal.classList.add("active");
+  adminModal.setAttribute("aria-hidden", "false");
+
+  document.body.style.overflow = "hidden";
+
+  adminEmail.focus();
+}
+
+// Cierra el acceso administrativo.
+function cerrarAdmin() {
+  adminModal.classList.remove("active");
+  adminModal.setAttribute("aria-hidden", "true");
+
+  document.body.style.overflow = "";
+}
+
+// Eventos de cierre y apertura.
+adminAccessButton.addEventListener("click", (evento) => {
+  evento.preventDefault();
+  abrirAdmin();
+});
+
+closeAdminButton.addEventListener("click", cerrarAdmin);
+adminOverlay.addEventListener("click", cerrarAdmin);
+
+closeDetailsButton.addEventListener("click", cerrarDetalles);
+detailsOverlay.addEventListener("click", cerrarDetalles);
+
+// Permite cerrar las ventanas con Escape.
+document.addEventListener("keydown", (evento) => {
+  if (evento.key !== "Escape") {
+    return;
+  }
+
+  if (detailsModal.classList.contains("active")) {
+    cerrarDetalles();
+  }
+
+  if (adminModal.classList.contains("active")) {
+    cerrarAdmin();
+  }
+});
+
+/* =========================================================
+   ACCESO ADMINISTRATIVO CON SUPABASE
+   ========================================================= */
+
+adminLoginForm.addEventListener("submit", async (evento) => {
+  evento.preventDefault();
+
+  const mostrarMensaje = (mensaje, tipo) => {
+    adminLoginMessage.textContent = mensaje;
+    adminLoginMessage.className = `admin-login-message ${tipo}`;
+  };
+
+  mostrarMensaje("Verificando acceso...", "loading");
+
+  try {
     const { data, error } = await supabase.auth.signInWithPassword({
-        email: adminEmail.value.trim(),
-        password: adminPassword.value
+      email: adminEmail.value.trim(),
+      password: adminPassword.value,
     });
 
-    // Credenciales incorrectas.
-    if (error) {
-        mostrarMensaje('Correo o contraseña incorrectos.', 'warning');
-        return;
+    if (error || !data.user) {
+      mostrarMensaje("Correo o contraseña incorrectos.", "warning");
+
+      return;
     }
 
-    // Comprueba el permiso administrativo.
+    // Consulta el rol asignado al usuario.
     const { data: rol, error: errorRol } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', data.user.id)
-        .single();
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", data.user.id)
+      .single();
 
-    // Roles autorizados.
-    const rolesPermitidos = [
-        'principal_admin',
-        'admin',
-        'editor',
-        'viewer'
-    ];
+    const rolesPermitidos = ["principal_admin", "admin", "editor", "viewer"];
 
-    // Usuario sin permisos.
+    // Verifica los permisos.
     if (errorRol || !rol || !rolesPermitidos.includes(rol.role)) {
-        await supabase.auth.signOut();
-        mostrarMensaje('Acceso denegado. No tienes permisos administrativos.', 'error');
-        return;
+      await supabase.auth.signOut();
+
+      mostrarMensaje(
+        "Acceso denegado. No tienes permisos administrativos.",
+        "error",
+      );
+
+      return;
     }
 
-    // Inicio de sesión correcto.
-    mostrarMensaje('¡Acceso autorizado! Bienvenido al panel administrativo.', 'success');
+    // Registrar el acceso administrativo autorizado.
+    const { error: errorAuditoria } = await supabase.rpc(
+      "registrar_evento_sesion",
+      {
+        p_evento: "INICIO_SESION",
+      },
+    );
 
-    // Redirige al usuario al panel independiente.
+    if (errorAuditoria) {
+      console.error(
+        "No fue posible registrar el inicio de sesión:",
+        errorAuditoria,
+      );
+
+      mostrarMensaje(
+        "No fue posible registrar el acceso. Inténtalo nuevamente.",
+        "error",
+      );
+
+      await supabase.auth.signOut();
+      return;
+    }
+
+    mostrarMensaje(
+      "¡Acceso autorizado! Bienvenido al panel administrativo.",
+      "success",
+    );
+
+    // Redirige al panel.
     setTimeout(() => {
-        window.location.href = '/admin.html';
+      window.location.href = "/admin.html";
     }, 1200);
+  } catch (error) {
+    console.error("Error en el inicio de sesión:", error);
+
+    mostrarMensaje(
+      "No fue posible verificar el acceso. Inténtalo nuevamente.",
+      "error",
+    );
+  }
 });
 
-// Abre la ventana al pulsar el icono administrativo.
-adminAccessButton.addEventListener('click', (evento) => {
-    evento.preventDefault();
+/* =========================================================
+   TARJETAS DE ESTABLECIMIENTOS
+   ========================================================= */
 
-    adminModal.classList.add('active');
-    adminModal.setAttribute('aria-hidden', 'false');
-});
+function construirTarjetasEstablecimientos(establecimientos) {
+  return establecimientos
+    .map((establecimiento, index) => {
+      const imagen = obtenerImagenRepresentativa(establecimiento);
+
+      return `
+            <article class="establishment-card">
+
+                ${
+                  imagen
+                    ? `
+                            <div class="establishment-card-image">
+
+                                <img
+                                    src="${escapeHTML(imagen)}"
+                                    alt="Imagen de ${escapeHTML(establecimiento.nombre)}"
+                                    loading="lazy"
+                                >
+
+                            </div>
+                        `
+                    : `
+                            <div class="establishment-card-image establishment-no-image">
+                                <span>Imagen no disponible</span>
+                            </div>
+                        `
+                }
 
 
-// Cierra la ventana mediante el botón de cierre.
-closeAdminButton.addEventListener('click', () => {
-    adminModal.classList.remove('active');
-    adminModal.setAttribute('aria-hidden', 'true');
-});
+                <h3>
+                    ${escapeHTML(establecimiento.nombre || "Sin nombre")}
+                </h3>
 
-// Cierra la ventana al pulsar sobre el fondo oscuro.
-adminOverlay.addEventListener('click', () => {
-    adminModal.classList.remove('active');
-    adminModal.setAttribute('aria-hidden', 'true');
-});
 
-// Permite cerrar la ventana con la tecla Escape.
-document.addEventListener('keydown', (evento) => {
-    if (evento.key === 'Escape' && adminModal.classList.contains('active')) {
-        adminModal.classList.remove('active');
-        adminModal.setAttribute('aria-hidden', 'true');
+                <p>
+                    ${escapeHTML(
+                      establecimiento.descripcion ||
+                        "Sin descripción disponible.",
+                    )}
+                </p>
+
+
+                <p>
+                    <strong>Categoría:</strong>
+                    ${escapeHTML(
+                      establecimiento.categorias?.nombre || "Sin categoría",
+                    )}
+                </p>
+
+
+                <p>
+                    <strong>Dirección:</strong>
+                    ${escapeHTML(establecimiento.direccion || "No registrada")}
+                </p>
+
+
+                <p>
+                    <strong>Teléfono:</strong>
+                    ${escapeHTML(establecimiento.telefono || "No registrado")}
+                </p>
+
+
+                <button
+                    type="button"
+                    class="locate-establishment"
+                    data-lat="${escapeHTML(establecimiento.latitud)}"
+                    data-lng="${escapeHTML(establecimiento.longitud)}"
+                >
+                    Ver en el mapa
+                </button>
+
+
+                <button
+                    type="button"
+                    class="details-establishment"
+                    data-index="${index}"
+                >
+                    Ver detalles
+                </button>
+
+            </article>
+        `;
+    })
+    .join("");
+}
+
+
+/* =========================================================
+   GALERÍA DEL ESTABLECIMIENTO
+   ========================================================= */
+
+function construirGaleria(imagenes, nombreEstablecimiento, imagenPrincipal = null) {
+  const fotografias = Array.isArray(imagenes) ? [...imagenes] : [];
+
+  if (imagenPrincipal) {
+    const yaExiste = fotografias.some(
+      (imagen) => imagen.ruta_archivo === imagenPrincipal
+    );
+
+    if (!yaExiste) {
+      fotografias.unshift({
+        ruta_archivo: imagenPrincipal,
+        texto_alternativo: `Imagen principal de ${nombreEstablecimiento}`,
+      });
     }
-});
-// Administra los botones de las tarjetas de resultados.
-document.addEventListener('click', (evento) => {
+  }
 
-    // Comprueba si se pulsó el botón para localizar un establecimiento.
-    const botonMapa = evento.target.closest('.locate-establishment');
+  const imagenesValidas = fotografias
+    .map((imagen) => ({
+      ...imagen,
+      url: obtenerImagenEstablecimiento(imagen),
+    }))
+    .filter((imagen) => imagen.url);
 
-    if (botonMapa) {
-        const latitud = botonMapa.dataset.lat;
-        const longitud = botonMapa.dataset.lng;
+  if (imagenesValidas.length === 0) {
+    return `
+      <div class="sigeco-slide active">
+        <div class="sigeco-no-image">
+          <span class="sigeco-no-image-icon">↻</span>
+          <strong>Imagen no disponible</strong>
+          <span>
+            Este establecimiento todavía no ha proporcionado fotografías.
+          </span>
+        </div>
+      </div>
+    `;
+  }
 
-        // Centra el mapa principal en el establecimiento seleccionado.
-        localizarEstablecimientoEnMapa(latitud, longitud);
+  return imagenesValidas
+    .map(
+      (imagen, indice) => `
+        <div class="sigeco-slide ${indice === 0 ? "active" : ""}">
+          <img
+            src="${escapeHTML(imagen.url)}"
+            alt="${escapeHTML(
+              imagen.texto_alternativo ||
+                `Imagen de ${nombreEstablecimiento}`
+            )}"
+            loading="${indice === 0 ? "eager" : "lazy"}"
+          >
+        </div>
+      `
+    )
+    .join("");
+}
 
-        // Desplaza la página hasta la sección del mapa.
-        setTimeout(() => {
-            const seccionMapa = document.querySelector('#mapa');
 
-            if (seccionMapa) {
-                seccionMapa.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-            }
-        }, 150);
+/* =========================================================
+   CATÁLOGO DE PRODUCTOS Y SERVICIOS
+   ========================================================= */
 
-        return;
+function construirCatalogo(productos) {
+  if (!productos || productos.length === 0) {
+    return `
+            <div class="sigeco-catalog-empty">
+
+                <span>▦</span>
+
+                <h4>
+                    Próximamente encontrarás nuestro catálogo
+                </h4>
+
+                <p>
+                    Este establecimiento todavía no ha registrado
+                    productos o servicios.
+                </p>
+
+            </div>
+        `;
+  }
+
+  return productos
+    .map((producto) => {
+      const imagen = producto.imagen_url;
+
+      return `
+            <article class="sigeco-product-card">
+
+                ${
+                  imagen
+                    ? `
+                            <img
+                                src="${escapeHTML(imagen)}"
+                                alt="${escapeHTML(producto.nombre || "Producto")}"
+                                loading="lazy"
+                            >
+                        `
+                    : `
+                            <div class="sigeco-product-placeholder">
+                                ▧
+                            </div>
+                        `
+                }
+
+
+                <div class="sigeco-product-info">
+
+                    <h4>
+                        ${escapeHTML(producto.nombre || "Sin nombre")}
+                    </h4>
+
+                    <p>
+                        ${escapeHTML(
+                          producto.descripcion || "Sin descripción disponible.",
+                        )}
+                    </p>
+
+                    <strong>
+                        ${escapeHTML(formatearPrecio(producto.precio))}
+                    </strong>
+
+                </div>
+
+            </article>
+        `;
+    })
+    .join("");
+}
+
+/* =========================================================
+   HORARIO DE ATENCIÓN: DETALLE PÚBLICO
+   ========================================================= */
+
+const DIAS_ATENCION_PUBLICO = [
+  ["lunes", "Lunes"],
+  ["martes", "Martes"],
+  ["miercoles", "Miércoles"],
+  ["jueves", "Jueves"],
+  ["viernes", "Viernes"],
+  ["sabado", "Sábado"],
+  ["domingo", "Domingo"],
+];
+
+function construirHorarioAtencion(horarios) {
+  if (!horarios || typeof horarios !== "object") {
+    return `
+      <section class="sigeco-hours-section">
+        <div class="sigeco-hours-heading">
+          <div class="sigeco-hours-heading-icon">◷</div>
+          <div>
+            <span class="sigeco-hours-eyebrow">PLANIFICA TU VISITA</span>
+            <h3>Horario de atención</h3>
+            <p>Consulta la disponibilidad del establecimiento.</p>
+          </div>
+        </div>
+        <div class="sigeco-hours-empty">
+          Este establecimiento todavía no ha registrado sus horarios.
+        </div>
+      </section>
+    `;
+  }
+
+  const ahora = new Date();
+
+  const partes = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Bogota",
+    weekday: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(ahora);
+
+  const obtenerParte = (tipo) =>
+    partes.find((parte) => parte.type === tipo)?.value || "";
+
+  const diasIngles = {
+    monday: "lunes",
+    tuesday: "martes",
+    wednesday: "miercoles",
+    thursday: "jueves",
+    friday: "viernes",
+    saturday: "sabado",
+    sunday: "domingo",
+  };
+
+  const diaActual = diasIngles[obtenerParte("weekday").toLowerCase()];
+  const horaActual = `${obtenerParte("hour")}:${obtenerParte("minute")}`;
+
+  const horarioHoy = horarios[diaActual];
+  const turnosHoy = Array.isArray(horarioHoy?.turnos) ? horarioHoy.turnos : [];
+
+  const abiertoAhora =
+    horarioHoy?.abierto === true &&
+    turnosHoy.some(
+      (turno) =>
+        turno.inicio &&
+        turno.fin &&
+        horaActual >= turno.inicio &&
+        horaActual < turno.fin,
+    );
+
+  const formatearHora = (hora) => {
+    if (!/^\d{2}:\d{2}$/.test(hora || "")) {
+      return "—";
     }
 
-    // Comprueba si se pulsó el botón para consultar los detalles.
-    const botonDetalles = evento.target.closest('.details-establishment');
+    const [horas, minutos] = hora.split(":").map(Number);
+    const periodo = horas >= 12 ? "p. m." : "a. m.";
+    const hora12 = horas % 12 || 12;
 
-    if (botonDetalles) {
-        const indice = Number(botonDetalles.dataset.index);
-        const establecimiento = resultadosActuales[indice];
+    return `${String(hora12).padStart(2, "0")}:${String(minutos).padStart(2, "0")} ${periodo}`;
+  };
 
-        // Comprueba que exista el establecimiento seleccionado.
-        if (!establecimiento) {
-            return;
-        }
+  const filas = DIAS_ATENCION_PUBLICO.map(([clave, nombre]) => {
+    const datos = horarios[clave];
+    const turnos = Array.isArray(datos?.turnos) ? datos.turnos : [];
+    const abierto = datos?.abierto === true && turnos.length > 0;
+    const esHoy = clave === diaActual;
 
-        // Construye la información que aparecerá en la ventana flotante.
-        detailsContent.innerHTML = `
-            <h3>${escapeHTML(establecimiento.nombre || 'Sin nombre')}</h3>
+    const horasHTML = abierto
+      ? turnos
+          .map(
+            (turno) => `
+              <span class="sigeco-hours-time">
+                ${escapeHTML(formatearHora(turno.inicio))}
+                <span class="sigeco-hours-dash">—</span>
+                ${escapeHTML(formatearHora(turno.fin))}
+              </span>
+            `,
+          )
+          .join("")
+      : `<span class="sigeco-hours-closed">Cerrado</span>`;
 
-            <p><strong>Categoría:</strong>
-                ${escapeHTML(establecimiento.categorias?.nombre || 'Sin categoría')}
-            </p>
+    return `
+      <div class="sigeco-hours-row ${esHoy ? "is-today" : ""}">
+        <div class="sigeco-hours-day">
+          <span class="sigeco-hours-day-dot"></span>
+          <strong>${nombre}</strong>
+          ${esHoy ? '<span class="sigeco-hours-today">HOY</span>' : ""}
+        </div>
 
-            <p><strong>Descripción:</strong>
-                ${escapeHTML(establecimiento.descripcion || 'Sin descripción disponible')}
-            </p>
+        <div class="sigeco-hours-times">
+          ${horasHTML}
+        </div>
+      </div>
+    `;
+  }).join("");
 
-            <p><strong>Dirección:</strong>
-                ${escapeHTML(establecimiento.direccion || 'No registrada')}
-            </p>
+  return `
+    <section class="sigeco-hours-section">
+      <div class="sigeco-hours-heading">
+        <div class="sigeco-hours-heading-icon">
+          <svg viewBox="0 0 24 24" width="26" height="26"
+            fill="none" stroke="currentColor"
+            stroke-width="1.8" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M12 7v5l3.5 2"></path>
+          </svg>
+        </div>
 
-            <p><strong>Teléfono:</strong>
-                ${escapeHTML(establecimiento.telefono || 'No registrado')}
-            </p>
+        <div class="sigeco-hours-heading-text">
+          <span class="sigeco-hours-eyebrow">PLANIFICA TU VISITA</span>
+          <h3>Horario de atención</h3>
+          <p>Conoce nuestros días y horarios de funcionamiento.</p>
+        </div>
 
-            <p><strong>Correo electrónico:</strong>
-                ${escapeHTML(establecimiento.correo || 'No registrado')}
-            </p>
+        <div class="sigeco-hours-status ${
+          abiertoAhora ? "is-open" : "is-closed"
+        }">
+          <span class="sigeco-hours-status-dot"></span>
+          ${abiertoAhora ? "Abierto ahora" : "Cerrado ahora"}
+        </div>
+      </div>
+
+      <div class="sigeco-hours-body">
+        <div class="sigeco-hours-list">
+          ${filas}
+        </div>
+
+        <div class="sigeco-hours-footer">
+          <span>◷</span>
+          Horario local de Sogamoso, Colombia
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+/* =========================================================
+   PRESENTACIÓN COMPLETA DEL ESTABLECIMIENTO
+   ========================================================= */
+
+function mostrarDetallesEstablecimiento(establecimiento) {
+  if (!establecimiento) {
+    return;
+  }
+
+  const escapar = escapeHTML;
+
+  // Organiza las imágenes.
+  const imagenes = (establecimiento.imagenes_establecimiento || [])
+    .slice()
+    .sort((a, b) => (a.orden || 0) - (b.orden || 0));
+
+  // Selecciona las imágenes de portada y galería.
+  const portada = imagenes.filter((imagen) => imagen.tipo === "portada");
+
+  const galeria = imagenes.filter((imagen) => imagen.tipo === "galeria");
+
+  const logos = imagenes.filter((imagen) => imagen.tipo === "logo");
+
+  const imagenesCarrusel = [
+    ...portada,
+    ...galeria,
+    ...(!portada.length && !galeria.length ? logos : []),
+  ];
+
+  // Productos activos.
+  const productos = (establecimiento.productos || []).filter(
+    (producto) => producto.estado === "activo",
+  );
+
+  // Información general.
+  const categoria = establecimiento.categorias?.nombre || "Sin categoría";
+
+  const direccion = establecimiento.direccion || "No registrada";
+
+  const telefono = establecimiento.telefono || "No registrado";
+
+  const correo = establecimiento.correo || "No registrado";
+
+  
+  // Construye la galería.
+  const imagenesHTML = construirGaleria(
+    imagenesCarrusel,
+    establecimiento.nombre,
+    establecimiento.imagen_path,
+  );
+
+
+  // Indicadores del carrusel.
+  const indicadores =
+    imagenesCarrusel.length > 1
+      ? imagenesCarrusel
+          .map(
+            (_, indice) => `
+            <button
+                type="button"
+                class="sigeco-indicator ${indice === 0 ? "active" : ""}"
+                data-slide="${indice}"
+                aria-label="Ver imagen ${indice + 1}"
+            ></button>
+        `,
+          )
+          .join("")
+      : "";
+
+  // Imágenes de vista previa del catálogo.
+  const vistaPreviaProductos =
+    productos.length > 0
+      ? productos
+          .slice(0, 3)
+          .map((producto) => {
+            return `
+                <div class="sigeco-preview-product">
+
+                    ${
+                      producto.imagen_url
+                        ? `
+                                <img
+                                    src="${escapar(producto.imagen_url)}"
+                                    alt="${escapar(producto.nombre || "Producto")}"
+                                    loading="lazy"
+                                >
+                            `
+                        : `
+                                <div class="sigeco-product-placeholder">
+                                    ▧
+                                </div>
+                            `
+                    }
+
+                </div>
+            `;
+          })
+          .join("")
+      : `
+            <div class="sigeco-preview-empty">
+                <span>▦</span>
+                <strong>Catálogo en preparación</strong>
+            </div>
         `;
 
-        // Muestra la ventana flotante.
-        detailsModal.classList.add('active');
-        detailsModal.setAttribute('aria-hidden', 'false');
+  // Catálogo completo.
+  const catalogoCompleto = construirCatalogo(productos);
 
-        // Muestra la ubicación en el segundo mapa.
-        mostrarMapaDetalles(
-            establecimiento.latitud,
-            establecimiento.longitud
-        );
+  // Construcción de la ficha.
+  detailsContent.innerHTML = `
+
+        <div class="sigeco-detail-page">
+
+
+            <!-- ENCABEZADO DEL ESTABLECIMIENTO -->
+
+            <section class="sigeco-detail-heading">
+
+                <div class="sigeco-heading-landscape">
+                    <div class="sigeco-heading-mountains"></div>
+                    <div class="sigeco-heading-town"></div>
+                </div>
+
+
+                <div class="sigeco-brand-pill">
+                    <span>●</span>
+                    SIGECO-SOG
+                </div>
+
+
+                <h2>
+                    ${escapar(establecimiento.nombre || "Establecimiento")}
+                </h2>
+
+
+                <p class="sigeco-establishment-description">
+                    ${escapar(
+                      establecimiento.descripcion ||
+                        "Conoce este establecimiento y los servicios que ofrece.",
+                    )}
+                </p>
+
+
+                <div class="sigeco-category-divider">
+
+                    <span></span>
+
+                    <div>
+                        ✦ &nbsp; ${escapar(categoria)}
+                    </div>
+
+                    <span></span>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- GALERÍA DE IMÁGENES -->
+
+            <section class="sigeco-main-carousel">
+
+                <div class="sigeco-carousel-track">
+                    ${imagenesHTML}
+                </div>
+
+
+                ${
+                  imagenesCarrusel.length > 1
+                    ? `
+                            <button
+                                type="button"
+                                class="sigeco-carousel-arrow prev"
+                                aria-label="Imagen anterior"
+                            >
+                                ‹
+                            </button>
+
+                            <button
+                                type="button"
+                                class="sigeco-carousel-arrow next"
+                                aria-label="Imagen siguiente"
+                            >
+                                ›
+                            </button>
+
+                            <div class="sigeco-carousel-indicators">
+                                ${indicadores}
+                            </div>
+                        `
+                    : ""
+                }
+
+            </section>
+
+
+
+            <!-- INFORMACIÓN DEL ESTABLECIMIENTO -->
+
+            <section class="sigeco-information-section">
+
+                <div class="sigeco-section-heading">
+
+                    <h3>
+                        <span class="sigeco-heading-icon">i</span>
+                        Información del establecimiento
+                    </h3>
+
+                    <span class="sigeco-heading-note">
+                        Calidad y confianza en un solo lugar　✓
+                    </span>
+
+                </div>
+
+
+                <div class="sigeco-information-grid">
+
+
+                    <article class="sigeco-information-card">
+
+                        <div class="sigeco-information-icon">❖</div>
+
+                        <div>
+                            <strong>Categoría</strong>
+                            <p>${escapar(categoria)}</p>
+                        </div>
+
+                    </article>
+
+
+                    <article class="sigeco-information-card">
+
+                        <div class="sigeco-information-icon">⌖</div>
+
+                        <div>
+                            <strong>Dirección</strong>
+                            <p>${escapar(direccion)}</p>
+                        </div>
+
+                    </article>
+
+
+                    <article class="sigeco-information-card">
+
+                        <div class="sigeco-information-icon">☎</div>
+
+                        <div>
+                            <strong>Teléfono</strong>
+                            <p>${escapar(telefono)}</p>
+                        </div>
+
+                    </article>
+
+
+                    <article class="sigeco-information-card">
+
+                        <div class="sigeco-information-icon">✉</div>
+
+                        <div>
+                            <strong>Correo electrónico</strong>
+                            <p>${escapar(correo)}</p>
+                        </div>
+
+                    </article>
+
+
+                </div>
+
+            </section>
+
+
+
+            <!-- HORARIO DE ATENCIÓN -->
+
+            ${construirHorarioAtencion(establecimiento.horario_atencion)}
+
+
+            <!-- CATÁLOGO DE PRODUCTOS Y SERVICIOS -->
+
+            <section class="sigeco-catalog-section">
+
+                <div class="sigeco-section-heading sigeco-catalog-heading">
+
+                    <h3>
+                        <span class="sigeco-heading-icon">⬡</span>
+                        Productos y servicios
+                    </h3>
+
+                    <button
+                        type="button"
+                        class="sigeco-text-link"
+                        id="sigeco-go-catalog"
+                    >
+                        Explora toda nuestra oferta
+                        <span>➜</span>
+                    </button>
+
+                </div>
+
+
+                <div class="sigeco-catalog-preview">
+
+                    <div class="sigeco-preview-images">
+                        ${vistaPreviaProductos}
+                    </div>
+
+
+                    <div class="sigeco-preview-description">
+
+                        <h3>Vista previa del catálogo</h3>
+
+                        <p>
+                            Conoce nuestros productos y servicios disponibles.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="sigeco-catalog-button"
+                        id="sigeco-open-catalog"
+                    >
+                        <span>▦</span>
+                        Ver catálogo completo -›
+                    </button>
+
+                </div>
+
+
+                <div
+                    class="sigeco-full-catalog"
+                    id="sigeco-full-catalog"
+                    hidden
+                >
+
+                    <div class="sigeco-full-catalog-heading">
+
+                        <h3>
+                            Catálogo de productos y servicios
+                        </h3>
+
+                        <p>
+                            Consulta la oferta disponible de este establecimiento.
+                        </p>
+
+                    </div>
+
+
+                    <div class="sigeco-products-grid">
+                        ${catalogoCompleto}
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- UBICACIÓN DEL ESTABLECIMIENTO -->
+
+            <section class="details-map-section">
+
+                <h3>
+                    <span class="sigeco-heading-icon">⌖</span>
+                    Ubicación del establecimiento
+                </h3>
+
+                <div id="details-map"></div>
+
+            </section>
+
+
+        </div>
+
+    `;
+
+  // Abre la ventana después de construir el contenido.
+  abrirDetalles();
+
+  /* -----------------------------------------------------
+       CONTROL DEL CARRUSEL
+       ----------------------------------------------------- */
+
+  const slides = [...detailsContent.querySelectorAll(".sigeco-slide")];
+
+  const dots = [...detailsContent.querySelectorAll(".sigeco-indicator")];
+
+  let indiceActual = 0;
+
+  function mostrarSlide(indice) {
+    if (!slides.length) {
+      return;
     }
-});
 
-// Cierra la ventana flotante mediante el botón de cierre.
-closeDetailsButton.addEventListener('click', () => {
-    detailsModal.classList.remove('active');
-    detailsModal.setAttribute('aria-hidden', 'true');
-});
+    indiceActual = (indice + slides.length) % slides.length;
 
-// Cierra la ventana al pulsar sobre el fondo oscuro.
-detailsOverlay.addEventListener('click', () => {
-    detailsModal.classList.remove('active');
-    detailsModal.setAttribute('aria-hidden', 'true');
-});
-
-// Permite cerrar la ventana flotante con la tecla Escape.
-document.addEventListener('keydown', (evento) => {
-    if (evento.key === 'Escape' && detailsModal.classList.contains('active')) {
-        detailsModal.classList.remove('active');
-        detailsModal.setAttribute('aria-hidden', 'true');
-    }
-});
-
-// Realiza la búsqueda de establecimientos.
-searchForm.addEventListener('submit', async (evento) => {
-    evento.preventDefault();
-
-    const busqueda = normalizarTexto(searchInput.value);
-
-    // Comprueba que se haya escrito algo.
-    if (!busqueda) {
-        resultadosActuales = [];
-        resultsContainer.innerHTML = '<p>Escribe algo para realizar la búsqueda.</p>';
-        mostrarEstablecimientosEnMapa([]);
-        return;
-    }
-
-    resultsContainer.innerHTML = '<p>Buscando establecimientos...</p>';
-
-    // Consulta los establecimientos activos.
-    const establecimientos = await obtenerEstablecimientos();
-
-    // Compara el texto con el nombre, la descripción y la categoría.
-    resultadosActuales = establecimientos.filter((establecimiento) => {
-        const nombre = normalizarTexto(establecimiento.nombre);
-        const descripcion = normalizarTexto(establecimiento.descripcion);
-        const categoria = normalizarTexto(establecimiento.categorias?.nombre);
-
-        return nombre.includes(busqueda) ||
-            descripcion.includes(busqueda) ||
-            categoria.includes(busqueda);
+    slides.forEach((slide, i) => {
+      slide.classList.toggle("active", i === indiceActual);
     });
 
-    // Actualiza los marcadores del mapa con los resultados encontrados.
-    mostrarEstablecimientosEnMapa(resultadosActuales);
+    dots.forEach((dot, i) => {
+      dot.classList.toggle("active", i === indiceActual);
+    });
+  }
 
-    // Informa si no existen coincidencias.
-    if (resultadosActuales.length === 0) {
-        resultsContainer.innerHTML = '<p>No encontramos establecimientos relacionados con tu búsqueda.</p>';
+  const botonAnterior = detailsContent.querySelector(
+    ".sigeco-carousel-arrow.prev",
+  );
+
+  const botonSiguiente = detailsContent.querySelector(
+    ".sigeco-carousel-arrow.next",
+  );
+
+  botonAnterior?.addEventListener("click", () => {
+    mostrarSlide(indiceActual - 1);
+  });
+
+  botonSiguiente?.addEventListener("click", () => {
+    mostrarSlide(indiceActual + 1);
+  });
+
+  dots.forEach((dot) => {
+    dot.addEventListener("click", () => {
+      mostrarSlide(Number(dot.dataset.slide));
+    });
+  });
+
+  /* -----------------------------------------------------
+       CARGA DE IMÁGENES
+       ----------------------------------------------------- */
+
+  detailsContent.querySelectorAll("img").forEach((imagen) => {
+    imagen.addEventListener("error", () => {
+      if (imagen.closest(".sigeco-slide")) {
+        imagen.parentElement.innerHTML = `
+                    <div class="sigeco-no-image">
+                        <span class="sigeco-no-image-icon">↻</span>
+                        <strong>Imagen no disponible</strong>
+                        <span>No fue posible cargar esta fotografía.</span>
+                    </div>
+                `;
+
         return;
+      }
+
+      if (imagen.closest(".sigeco-product-card")) {
+        const reemplazo = document.createElement("div");
+
+        reemplazo.className = "sigeco-product-placeholder";
+        reemplazo.textContent = "▧";
+
+        imagen.replaceWith(reemplazo);
+
+        return;
+      }
+
+      if (imagen.closest(".sigeco-preview-product")) {
+        const reemplazo = document.createElement("div");
+
+        reemplazo.className = "sigeco-product-placeholder";
+        reemplazo.textContent = "▧";
+
+        imagen.replaceWith(reemplazo);
+      }
+    });
+  });
+
+  /* -----------------------------------------------------
+       APERTURA DEL CATÁLOGO COMPLETO
+       ----------------------------------------------------- */
+
+  const catalogo = detailsContent.querySelector("#sigeco-full-catalog");
+
+  function abrirCatalogo() {
+    if (!catalogo) {
+      return;
     }
 
-    // Construye las tarjetas de resultados.
-    resultsContainer.innerHTML = resultadosActuales.map((establecimiento, index) => `
-        <article class="establishment-card">
-            <h3>${escapeHTML(establecimiento.nombre || 'Sin nombre')}</h3>
+    catalogo.hidden = false;
 
-            <p>${escapeHTML(establecimiento.descripcion || 'Sin descripción disponible.')}</p>
+    catalogo.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }
 
-            <p><strong>Categoría:</strong>
-                ${escapeHTML(establecimiento.categorias?.nombre || 'Sin categoría')}
-            </p>
+  detailsContent
+    .querySelector("#sigeco-open-catalog")
+    ?.addEventListener("click", abrirCatalogo);
 
-            <p><strong>Dirección:</strong>
-                ${escapeHTML(establecimiento.direccion || 'No registrada')}
-            </p>
+  detailsContent
+    .querySelector("#sigeco-go-catalog")
+    ?.addEventListener("click", abrirCatalogo);
 
-            <p><strong>Teléfono:</strong>
-                ${escapeHTML(establecimiento.telefono || 'No registrado')}
-            </p>
+  /* -----------------------------------------------------
+       MAPA DEL ESTABLECIMIENTO
+       ----------------------------------------------------- */
 
-            <button
-                type="button"
-                class="locate-establishment"
-                data-lat="${establecimiento.latitud}"
-                data-lng="${establecimiento.longitud}"
-            >
-                Ver en el mapa
-            </button>
+  const latitud = Number(establecimiento.latitud);
+  const longitud = Number(establecimiento.longitud);
 
-            <button
-                type="button"
-                class="details-establishment"
-                data-index="${index}"
-            >
-                Ver detalles
-            </button>
-        </article>
-    `).join('');
+  if (
+    Number.isFinite(latitud) &&
+    Number.isFinite(longitud) &&
+    latitud !== 0 &&
+    longitud !== 0
+  ) {
+    // Se espera a que el modal esté visible para inicializar el mapa.
+    requestAnimationFrame(() => {
+      try {
+        mostrarMapaDetalles(latitud, longitud);
+      } catch (error) {
+        console.error(
+          "No fue posible mostrar el mapa del establecimiento:",
+          error,
+        );
+      }
+    });
+  } else {
+    const mapaDetalles = detailsContent.querySelector("#details-map");
+
+    if (mapaDetalles) {
+      mapaDetalles.innerHTML = `
+                <div class="map-message">
+                    <strong>Ubicación no disponible</strong>
+                    <p>
+                        Este establecimiento todavía no tiene
+                        coordenadas geográficas registradas.
+                    </p>
+                </div>
+            `;
+    }
+  }
+}
+
+/* =========================================================
+   EVENTOS DE LAS TARJETAS
+   ========================================================= */
+
+document.addEventListener("click", (evento) => {
+  // Localizar un establecimiento.
+  const botonMapa = evento.target.closest(".locate-establishment");
+
+  if (botonMapa) {
+    const latitud = Number(botonMapa.dataset.lat);
+    const longitud = Number(botonMapa.dataset.lng);
+
+    if (
+      !Number.isFinite(latitud) ||
+      !Number.isFinite(longitud) ||
+      latitud === 0 ||
+      longitud === 0
+    ) {
+      alert("Este establecimiento no tiene una ubicación registrada.");
+
+      return;
+    }
+
+    localizarEstablecimientoEnMapa(latitud, longitud);
+
+    setTimeout(() => {
+      const seccionMapa = document.querySelector("#mapa");
+
+      seccionMapa?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 150);
+
+    return;
+  }
+
+  // Consultar detalles.
+  const botonDetalles = evento.target.closest(".details-establishment");
+
+  if (botonDetalles) {
+    const indice = Number(botonDetalles.dataset.index);
+
+    const establecimiento = resultadosActuales[indice];
+
+    if (!establecimiento) {
+      return;
+    }
+
+    mostrarDetallesEstablecimiento(establecimiento);
+  }
 });
 
-// Limpia la búsqueda y recupera todos los establecimientos en el mapa.
-clearSearchButton.addEventListener('click', async () => {
+/* =========================================================
+   BÚSQUEDA DE ESTABLECIMIENTOS Y PRODUCTOS
+   ========================================================= */
 
-    // Limpia el campo y los resultados.
-    searchInput.value = '';
-    resultsContainer.innerHTML = '';
+searchForm.addEventListener("submit", async (evento) => {
+  evento.preventDefault();
+
+  const busqueda = normalizarTexto(searchInput.value);
+
+  if (!busqueda) {
     resultadosActuales = [];
 
-    // Consulta nuevamente todos los establecimientos activos.
+    resultsContainer.innerHTML = `
+            <p>Escribe algo para realizar la búsqueda.</p>
+        `;
+
+    mostrarEstablecimientosEnMapa([]);
+
+    return;
+  }
+
+  resultsContainer.innerHTML = `
+        <p>Buscando establecimientos...</p>
+    `;
+
+  try {
     const establecimientos = await obtenerEstablecimientos();
 
-    // Recupera todos los marcadores del mapa.
-    mostrarEstablecimientosEnMapa(establecimientos);
-});
+    resultadosActuales = establecimientos.filter((establecimiento) => {
+      const nombre = normalizarTexto(establecimiento.nombre);
 
-// Consulta las categorías y construye sus tarjetas.
-async function cargarCategorias() {
-    const contenedor = document.querySelector('#category-grid');
+      const descripcion = normalizarTexto(establecimiento.descripcion);
 
-    contenedor.innerHTML = '<p>Cargando categorías...</p>';
+      const categoria = normalizarTexto(establecimiento.categorias?.nombre);
 
-    // Obtiene las categorías almacenadas en Supabase.
-    const categorias = await obtenerCategorias();
+      const coincideEstablecimiento =
+        nombre.includes(busqueda) ||
+        descripcion.includes(busqueda) ||
+        categoria.includes(busqueda);
 
-    // Informa si no se pudieron cargar las categorías.
-    if (categorias.length === 0) {
-        contenedor.innerHTML = '<p>No se pudieron cargar las categorías.</p>';
-        return;
-    }
+      const coincideCatalogo = (establecimiento.productos || []).some(
+        (producto) => {
+          return (
+            normalizarTexto(producto.nombre).includes(busqueda) ||
+            normalizarTexto(producto.descripcion).includes(busqueda)
+          );
+        },
+      );
 
-    // Asigna un icono a cada categoría.
-    const iconosCategorias = {
-        'Comercio': '🛍️',
-        'Gastronomía': '🍽️',
-        'Servicios': '🛠️',
-        'Emprendimientos': '🌱'
-    };
+      return coincideEstablecimiento || coincideCatalogo;
+    });
 
-    // Construye las tarjetas de categorías.
-    contenedor.innerHTML = categorias.map((categoria) => `
-        <button
-            type="button"
-            class="category-card"
-            data-category="${escapeHTML(categoria.nombre)}"
-        >
-            <span class="category-icon">
-                ${iconosCategorias[categoria.nombre] || '📍'}
-            </span>
-            <strong>${escapeHTML(categoria.nombre)}</strong>
-            <small>${escapeHTML(categoria.descripcion || 'Consulta esta categoría')}</small>
-        </button>
-    `).join('');
+    mostrarEstablecimientosEnMapa(resultadosActuales);
 
-    // Activa el filtro al seleccionar una categoría.
-    document.querySelectorAll('.category-card').forEach((card) => {
-        card.addEventListener('click', async () => {
-
-            const categoriaSeleccionada = card.dataset.category;
-
-            resultsContainer.innerHTML = `
-                <p>Buscando establecimientos de ${escapeHTML(categoriaSeleccionada)}...</p>
+    if (resultadosActuales.length === 0) {
+      resultsContainer.innerHTML = `
+                <p>
+                    No encontramos establecimientos relacionados
+                    con tu búsqueda.
+                </p>
             `;
 
-            // Consulta los establecimientos activos.
-            const establecimientos = await obtenerEstablecimientos();
+      return;
+    }
 
-            // Filtra los establecimientos de la categoría seleccionada.
-            resultadosActuales = establecimientos.filter((establecimiento) => {
-                return establecimiento.categorias?.nombre === categoriaSeleccionada;
-            });
+    resultsContainer.innerHTML =
+      construirTarjetasEstablecimientos(resultadosActuales);
+  } catch (error) {
+    console.error("Error al realizar la búsqueda:", error);
 
-            // Actualiza los marcadores del mapa.
-            mostrarEstablecimientosEnMapa(resultadosActuales);
+    resultsContainer.innerHTML = `
+            <p>
+                No fue posible realizar la búsqueda.
+                Inténtalo nuevamente.
+            </p>
+        `;
+  }
+});
 
-            // Informa si la categoría todavía no tiene establecimientos.
-            if (resultadosActuales.length === 0) {
-                resultsContainer.innerHTML = `
-                    <p>No hay establecimientos registrados en ${escapeHTML(categoriaSeleccionada)}.</p>
-                `;
-                return;
-            }
+/* =========================================================
+   LIMPIAR BÚSQUEDA
+   ========================================================= */
 
-            // Construye las tarjetas de resultados de la categoría.
-            resultsContainer.innerHTML = resultadosActuales.map((establecimiento, index) => `
-                <article class="establishment-card">
-                    <h3>${escapeHTML(establecimiento.nombre || 'Sin nombre')}</h3>
+clearSearchButton.addEventListener("click", async () => {
+  searchInput.value = "";
 
-                    <p>${escapeHTML(establecimiento.descripcion || 'Sin descripción disponible.')}</p>
+  resultsContainer.innerHTML = "";
 
-                    <p><strong>Categoría:</strong>
-                        ${escapeHTML(establecimiento.categorias?.nombre || 'Sin categoría')}
-                    </p>
+  resultadosActuales = [];
 
-                    <p><strong>Dirección:</strong>
-                        ${escapeHTML(establecimiento.direccion || 'No registrada')}
-                    </p>
-
-                    <p><strong>Teléfono:</strong>
-                        ${escapeHTML(establecimiento.telefono || 'No registrado')}
-                    </p>
-
-                    <button
-                        type="button"
-                        class="locate-establishment"
-                        data-lat="${establecimiento.latitud}"
-                        data-lng="${establecimiento.longitud}"
-                    >
-                        Ver en el mapa
-                    </button>
-
-                    <button
-                        type="button"
-                        class="details-establishment"
-                        data-index="${index}"
-                    >
-                        Ver detalles
-                    </button>
-                </article>
-            `).join('');
-        });
-    });
-}
-
-// Inicializa el mapa principal y muestra los establecimientos registrados.
-async function cargarMapa() {
-
-    // Crea el mapa dentro del contenedor identificado como "map".
-    inicializarMapa('map');
-
-    // Consulta los establecimientos activos.
+  try {
     const establecimientos = await obtenerEstablecimientos();
 
-    // Muestra los establecimientos mediante sus coordenadas.
     mostrarEstablecimientosEnMapa(establecimientos);
+  } catch (error) {
+    console.error("Error al recuperar los establecimientos:", error);
+  }
+});
+
+/* =========================================================
+   CARRUSEL ANIMADO DE CATEGORÍAS — SIGECO-SOG
+   ========================================================= */
+
+let detenerCarruselCategorias = null;
+
+async function cargarCategorias() {
+  const contenedor = document.querySelector("#category-grid");
+
+  if (!contenedor) return;
+
+  // Detener cualquier carrusel anterior.
+  if (detenerCarruselCategorias) {
+    detenerCarruselCategorias();
+    detenerCarruselCategorias = null;
+  }
+
+  contenedor.innerHTML = "<p>Cargando categorías...</p>";
+
+  try {
+    const categorias = await obtenerCategorias();
+
+    if (!categorias || categorias.length === 0) {
+      contenedor.innerHTML = "<p>No se encontraron categorías registradas.</p>";
+      return;
+    }
+
+    // Íconos específicos de cada categoría.
+    const iconosCategorias = {
+      agricultura: "🌾",
+      alojamiento: "🏨",
+      automotores: "🚗",
+      cafeteria: "☕",
+      comercio: "🛍️",
+      construccion: "🏗️",
+      cultura: "🎭",
+      deportes: "⚽",
+      educacion: "📚",
+      emprendimientos: "🌱",
+      "espacios publicos y naturales": "🌳",
+      eventos: "🎟️",
+      finanzas: "💰",
+      gastronomia: "🍽️",
+      hogar: "🏡",
+      otros: "🏪",
+      recreacion: "🎡",
+      restaurante: "🍴",
+      salud: "💊",
+      servicios: "🛠️",
+      tecnologia: "💻",
+      transporte: "🚚",
+      turismo: "🧭",
+    };
+
+    const coloresCategorias = {
+      agricultura: "#4e9367",
+      alojamiento: "#3986b5",
+      automotores: "#65788c",
+      cafeteria: "#ad7954",
+      comercio: "#447fca",
+      construccion: "#c18a3d",
+      cultura: "#a76bc0",
+      deportes: "#6c9a48",
+      educacion: "#6778c7",
+      emprendimientos: "#3c9973",
+      "espacios publicos y naturales": "#419879",
+      eventos: "#c26c94",
+      finanzas: "#8671bd",
+      gastronomia: "#d48a55",
+      hogar: "#aa8a64",
+      otros: "#698d91",
+      recreacion: "#b37ac4",
+      restaurante: "#cb8051",
+      salud: "#c96b75",
+      servicios: "#438c99",
+      tecnologia: "#8278c9",
+      transporte: "#63879e",
+      turismo: "#3d9d91",
+    };
+
+    const total = categorias.length;
+    let indiceActivo = 0;
+    let intervalo = null;
+    let pausa = false;
+    let inicioTouch = null;
+
+    // Construir estructura del carrusel.
+    contenedor.innerHTML = `
+      <div class="sigeco-category-carousel">
+
+        <div class="sigeco-carousel-heading">
+          <span class="sigeco-carousel-eyebrow">
+            DESCUBRE SOGAMOSO
+          </span>
+
+          <p>
+            Explora los sectores de nuestra ciudad.
+            Selecciona una categoría para conocer
+            sus establecimientos.
+          </p>
+        </div>
+
+        <div
+          class="sigeco-carousel-viewport"
+          aria-label="Carrusel de categorías"
+        >
+          <div class="sigeco-carousel-track"></div>
+        </div>
+
+        <div class="sigeco-carousel-controls">
+          <button
+            type="button"
+            class="sigeco-carousel-arrow"
+            data-direction="-1"
+            aria-label="Categoría anterior"
+          >‹</button>
+
+          <div class="sigeco-carousel-counter">
+            <span class="sigeco-carousel-current">01</span>
+            <span class="sigeco-carousel-separator">/</span>
+            <span>${String(total).padStart(2, "0")}</span>
+          </div>
+
+          <button
+            type="button"
+            class="sigeco-carousel-arrow"
+            data-direction="1"
+            aria-label="Categoría siguiente"
+          >›</button>
+        </div>
+
+        <div class="sigeco-carousel-progress">
+          <span class="sigeco-carousel-progress-bar"></span>
+        </div>
+
+        <p class="sigeco-carousel-hint">
+          Desliza para explorar · Selecciona para descubrir
+        </p>
+
+      </div>
+    `;
+
+    const viewport = contenedor.querySelector(".sigeco-carousel-viewport");
+
+    const track = contenedor.querySelector(".sigeco-carousel-track");
+
+    const contador = contenedor.querySelector(".sigeco-carousel-current");
+
+    const progreso = contenedor.querySelector(".sigeco-carousel-progress-bar");
+
+    // Crear tarjetas reales desde Supabase.
+    const tarjetas = categorias.map((categoria, indice) => {
+      const clave = normalizarTexto(categoria.nombre);
+
+      const icono = iconosCategorias[clave] || "🏪";
+      const color = coloresCategorias[clave] || "#438b7b";
+
+      const tarjeta = document.createElement("button");
+
+      tarjeta.type = "button";
+      tarjeta.className = "category-card sigeco-carousel-card";
+      tarjeta.dataset.category = categoria.nombre;
+      tarjeta.dataset.index = String(indice);
+
+      tarjeta.style.setProperty("--category-accent", color);
+
+      tarjeta.innerHTML = `
+        <span class="sigeco-card-decoration"></span>
+
+        <span class="sigeco-card-top">
+          <span class="sigeco-card-label">
+            SIGECO · CATEGORÍAS
+          </span>
+          <span class="sigeco-card-arrow">↗</span>
+        </span>
+
+        <span class="category-icon">
+          ${icono}
+        </span>
+
+        <strong>${escapeHTML(categoria.nombre)}</strong>
+
+        <small>
+          ${escapeHTML(
+            categoria.descripcion ||
+              "Descubre los establecimientos de esta categoría.",
+          )}
+        </small>
+
+        <span class="sigeco-card-footer">
+          EXPLORAR CATEGORÍA
+          <span>→</span>
+        </span>
+      `;
+
+      track.appendChild(tarjeta);
+
+      return tarjeta;
+    });
+
+    // Determinar la posición relativa más corta.
+    function obtenerDistancia(indice) {
+      let distancia = indice - indiceActivo;
+
+      if (distancia > total / 2) {
+        distancia -= total;
+      }
+
+      if (distancia < -total / 2) {
+        distancia += total;
+      }
+
+      return distancia;
+    }
+
+    // Aplicar posiciones y perspectiva 3D.
+    function actualizarCarrusel() {
+      tarjetas.forEach((tarjeta, indice) => {
+        const distancia = obtenerDistancia(indice);
+        const absoluta = Math.abs(distancia);
+
+        tarjeta.classList.toggle("is-active", distancia === 0);
+
+        tarjeta.classList.toggle("is-neighbor", absoluta === 1);
+
+        tarjeta.classList.toggle("is-hidden", absoluta > 2);
+
+        tarjeta.style.setProperty("--card-position", String(distancia));
+
+        tarjeta.style.setProperty("--card-depth", String(-absoluta * 100));
+
+        tarjeta.style.setProperty("--card-rotation", `${distancia * -13}deg`);
+
+        tarjeta.style.opacity =
+          absoluta > 2
+            ? "0"
+            : absoluta === 2
+              ? "0.38"
+              : absoluta === 1
+                ? "0.72"
+                : "1";
+
+        tarjeta.style.pointerEvents = absoluta > 2 ? "none" : "auto";
+
+        tarjeta.tabIndex = distancia === 0 ? 0 : -1;
+
+        if (distancia !== 0 && tarjeta.contains(document.activeElement)) {
+          tarjeta.blur();
+        }
+
+        tarjeta.setAttribute("aria-hidden", distancia === 0 ? "false" : "true");
+      });
+
+      contador.textContent = String(indiceActivo + 1).padStart(2, "0");
+
+      progreso.style.width = `${((indiceActivo + 1) / total) * 100}%`;
+    }
+
+    function moverCarrusel(direccion) {
+      indiceActivo = (indiceActivo + direccion + total) % total;
+
+      actualizarCarrusel();
+    }
+
+    function iniciarAutomatico() {
+      detenerAutomatico();
+
+      if (
+        total <= 1 ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ) {
+        return;
+      }
+
+      intervalo = window.setInterval(() => {
+        if (!pausa && !document.hidden) {
+          moverCarrusel(1);
+        }
+      }, 4000);
+    }
+
+    function detenerAutomatico() {
+      if (intervalo !== null) {
+        clearInterval(intervalo);
+        intervalo = null;
+      }
+    }
+
+    // Flechas de navegación.
+    contenedor.querySelectorAll(".sigeco-carousel-arrow").forEach((boton) => {
+      boton.addEventListener("click", () => {
+        moverCarrusel(Number(boton.dataset.direction));
+        iniciarAutomatico();
+      });
+    });
+
+    // Pausar mientras se interactúa.
+    viewport.addEventListener("mouseenter", () => {
+      pausa = true;
+    });
+
+    viewport.addEventListener("mouseleave", () => {
+      pausa = false;
+    });
+
+    viewport.addEventListener("focusin", () => {
+      pausa = true;
+    });
+
+    viewport.addEventListener("focusout", (evento) => {
+      if (!viewport.contains(evento.relatedTarget)) {
+        pausa = false;
+      }
+    });
+
+    // Deslizamiento táctil.
+    viewport.addEventListener(
+      "touchstart",
+      (evento) => {
+        inicioTouch = evento.touches[0].clientX;
+        pausa = true;
+      },
+      { passive: true },
+    );
+
+    viewport.addEventListener(
+      "touchend",
+      (evento) => {
+        if (inicioTouch === null) return;
+
+        const diferencia = evento.changedTouches[0].clientX - inicioTouch;
+
+        if (Math.abs(diferencia) > 45) {
+          moverCarrusel(diferencia < 0 ? 1 : -1);
+        }
+
+        inicioTouch = null;
+        pausa = false;
+        iniciarAutomatico();
+      },
+      { passive: true },
+    );
+
+    // Navegación por teclado.
+    viewport.addEventListener("keydown", (evento) => {
+      if (evento.key === "ArrowRight") {
+        evento.preventDefault();
+        moverCarrusel(1);
+      }
+
+      if (evento.key === "ArrowLeft") {
+        evento.preventDefault();
+        moverCarrusel(-1);
+      }
+    });
+
+    // Mantener el filtro original de establecimientos.
+    tarjetas.forEach((tarjeta, indice) => {
+      tarjeta.addEventListener("click", async () => {
+        // Primero centrar una tarjeta lateral.
+        if (indice !== indiceActivo) {
+          indiceActivo = indice;
+          actualizarCarrusel();
+          return;
+        }
+
+        const categoriaSeleccionada = tarjeta.dataset.category;
+
+        resultsContainer.innerHTML = `
+          <p>
+            Buscando establecimientos de
+            ${escapeHTML(categoriaSeleccionada)}...
+          </p>
+        `;
+
+        try {
+          const establecimientos = await obtenerEstablecimientos();
+
+          resultadosActuales = establecimientos.filter(
+            (establecimiento) =>
+              normalizarTexto(establecimiento.categorias?.nombre) ===
+              normalizarTexto(categoriaSeleccionada),
+          );
+
+          mostrarEstablecimientosEnMapa(resultadosActuales);
+
+          if (resultadosActuales.length === 0) {
+            resultsContainer.innerHTML = `
+              <p>
+                No hay establecimientos registrados
+                en ${escapeHTML(categoriaSeleccionada)}.
+              </p>
+            `;
+            return;
+          }
+
+          resultsContainer.innerHTML =
+            construirTarjetasEstablecimientos(resultadosActuales);
+        } catch (error) {
+          console.error("Error al filtrar la categoría:", error);
+
+          resultsContainer.innerHTML = `
+            <p>
+              No fue posible consultar esta categoría.
+            </p>
+          `;
+        }
+      });
+    });
+
+    actualizarCarrusel();
+    iniciarAutomatico();
+
+    // Permitir reinicializar sin acumular intervalos.
+    detenerCarruselCategorias = detenerAutomatico;
+  } catch (error) {
+    console.error("Error al cargar las categorías:", error);
+
+    contenedor.innerHTML = "<p>No fue posible cargar las categorías.</p>";
+  }
 }
 
-// Carga las categorías al iniciar la aplicación.
-cargarCategorias();
+/* =========================================================
+   CARGAR MAPA PRINCIPAL
+   ========================================================= */
 
-// Carga el mapa al iniciar la aplicación.
-cargarMapa();
+async function cargarMapa() {
+  try {
+    inicializarMapa("map");
+
+    const establecimientos = await obtenerEstablecimientos();
+
+    establecimientosDisponibles = establecimientos || [];
+
+    mostrarEstablecimientosEnMapa(establecimientosDisponibles);
+  } catch (error) {
+    console.error("Error al cargar el mapa:", error);
+
+    const contenedorMapa = document.querySelector("#map");
+
+    if (contenedorMapa) {
+      contenedorMapa.innerHTML = `
+                <div class="map-message">
+                    <strong>No fue posible cargar el mapa</strong>
+                    <p>Intenta actualizar la página.</p>
+                </div>
+            `;
+    }
+  }
+}
+
+/* =========================================================
+   ACERCA DEL PROYECTO — SECCIÓN DESPLEGABLE
+   ========================================================= */
+
+function inicializarAcercaDelProyecto() {
+  const seccion = document.querySelector("#acerca");
+  const boton = document.querySelector("#sigeco-about-toggle");
+  const contenido = document.querySelector("#sigeco-about-content");
+  const enlaceMenu = document.querySelector('.navigation a[href="#acerca"]');
+
+  if (!seccion || !boton || !contenido) return;
+
+  const movimientoReducido = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  );
+
+  function establecerEstado(abierto) {
+    boton.setAttribute("aria-expanded", String(abierto));
+    seccion.classList.toggle("is-open", abierto);
+    contenido.inert = !abierto;
+  }
+
+  function desplazarASeccion() {
+    seccion.scrollIntoView({
+      behavior: movimientoReducido.matches ? "instant" : "smooth",
+      block: "start",
+    });
+  }
+
+  function abrirDesdeMenu() {
+    establecerEstado(true);
+
+    requestAnimationFrame(() => {
+      desplazarASeccion();
+    });
+  }
+
+  boton.addEventListener("click", () => {
+    const abierto = boton.getAttribute("aria-expanded") === "true";
+    establecerEstado(!abierto);
+  });
+
+  enlaceMenu?.addEventListener("click", (evento) => {
+    evento.preventDefault();
+    abrirDesdeMenu();
+
+    if (window.location.hash !== "#acerca") {
+      history.replaceState(null, "", "#acerca");
+    }
+  });
+
+  // También funciona si se abre directamente la URL con #acerca.
+  if (window.location.hash === "#acerca") {
+    abrirDesdeMenu();
+  }
+
+  window.addEventListener("hashchange", () => {
+    if (window.location.hash === "#acerca") {
+      abrirDesdeMenu();
+    }
+  });
+}
+
+inicializarAcercaDelProyecto();
+
+/* =========================================================
+   INICIO DE LA APLICACIÓN
+   ========================================================= */
+
+async function iniciarAplicacion() {
+  await Promise.all([cargarCategorias(), cargarMapa()]);
+}
+
+// Ejecuta la aplicación.
+iniciarAplicacion();

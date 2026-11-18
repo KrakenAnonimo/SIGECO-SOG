@@ -1,7 +1,5 @@
-
 // Configura un contador interactivo que aumenta al hacer clic en un elemento.
 export function setupCounter(element) {
-
   // Guarda el valor actual del contador.
   let counter = 0;
 
@@ -12,7 +10,7 @@ export function setupCounter(element) {
   };
 
   // Aumenta el contador en una unidad cada vez que se hace clic.
-  element.addEventListener('click', () => setCounter(counter + 1));
+  element.addEventListener("click", () => setCounter(counter + 1));
 
   // Inicializa el contador mostrando el valor cero.
   setCounter(0);
